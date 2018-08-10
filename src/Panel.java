@@ -40,6 +40,15 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
         return text.getText();
     }
 
+    public void setName(String name) {
+        text.setText(name);
+
+        FontMetrics fm = text.getFontMetrics(font);
+        int width = fm.stringWidth(name);
+        int height = fm.getHeight();
+        setBounds(getX(), getY(), width + 10, height + 10);
+    }
+
     public void select() {
         selected = true;
     }
