@@ -4,8 +4,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
 
+// Dieser Commit: Draw-Bug am oberen Bildschirm behoben
+// Nach Person suchen implementiert
+
 // TODO: Zoom
-// TODO: Panels umbenennen
 // TODO: Automatisches Sortieren
 public class Main {
     private JFrame frame;
@@ -67,8 +69,8 @@ public class Main {
         fileMenu.add(menuItemOpen);
 
         JMenu editMenu = new JMenu("Bearbeiten");
-        JMenuItem menuItemDeleteSelected = new JMenuItem("Auswahl löschen");
 
+        JMenuItem menuItemDeleteSelected = new JMenuItem("Auswahl löschen");
         menuItemDeleteSelected.addActionListener((e) -> {
             contentPanel.updateSelectedPanels();
             for (int i = contentPanel.getPanelList().size() - 1; i >= 0; i--) {
@@ -79,7 +81,11 @@ public class Main {
             contentPanel.revalidate();
         });
 
+        JMenuItem menuItemSearchPanel = new JMenuItem("Nach Person Suchen");
+        menuItemSearchPanel.addActionListener((e) -> search());
+
         editMenu.add(menuItemDeleteSelected);
+        editMenu.add(menuItemSearchPanel);
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
@@ -297,6 +303,18 @@ public class Main {
 
             contentPanel.repaint();
             contentPanel.revalidate();
+        }
+    }
+
+    private void search() {
+        JTextField field = new JTextField();
+        field.addAncestorListener(new RequestFocusListener());
+
+        JComponent[] inputs = new JComponent[] {new JLabel("Nach Name suchen:"), field};
+
+        int option = JOptionPane.showConfirmDialog(frame, inputs, "Suchen", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            contentPanel.searchFor(field.getText());
         }
     }
 

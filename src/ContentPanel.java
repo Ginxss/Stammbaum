@@ -148,6 +148,19 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         return false;
     }
 
+    public void searchFor(String name) {
+        Panel panel = getPanel(name);
+        if (panel != null) {
+            Point oldLocation = panel.getLocation();
+            panel.setLocation(getWidth()/2 - panel.getWidth()/2, getHeight()/5);//getHeight()/2 - panel.getHeight()/2);
+            Point diff = new Point(panel.getX() - oldLocation.x, panel.getY() - oldLocation.y);
+            for (Panel panel1 : panelList) {
+                if (panel1 != panel)
+                    panel1.setLocation(panel1.getX() + diff.x, panel1.getY() + diff.y);
+            }
+        }
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -213,6 +226,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             }
 
             Point parentMiddle = new Point();
+            parentMiddle.y = Integer.MIN_VALUE;
             int i = 0;
             for (Point point : parentNodes) {
                 parentMiddle.x += point.x;

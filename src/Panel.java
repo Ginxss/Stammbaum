@@ -12,7 +12,7 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
     private boolean selected;
 
     private JLabel text;
-    private static Font font = new Font("Tahoma", Font.PLAIN, 14);
+    private static Font font = new Font("Tahoma", Font.PLAIN, 12);
 
     public Panel(String name, int x, int y) {
         setBackground(Color.decode("#efd667"));
