@@ -216,8 +216,27 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             }
         }
 
-        int spacing = 0;
+        int spacing = 30;
         for (ChildParentGroup group : groups) {
+            LinkedList<Point> childNodes = new LinkedList<>();
+            for (Panel panel : group.getChildren()) {
+                int childX = panel.getX() + panel.getWidth() / 2;
+                int childY = panel.getY();
+                childNodes.add(new Point(childX, childY));
+            }
+
+            Point childMiddle = new Point();
+            childMiddle.y = Integer.MAX_VALUE;
+            int j = 0;
+            for (Point point : childNodes) {
+                if (point.y < childMiddle.y)
+                    childMiddle.y = point.y;
+                childMiddle.x += point.x;
+                j++;
+            }
+            childMiddle.x /= j;
+            childMiddle.y -= 0;
+
             LinkedList<Point> parentNodes = new LinkedList<>();
             for (Panel panel : group.getParents()) {
                 int parentX = panel.getX() + panel.getWidth() / 2;
@@ -229,29 +248,13 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             parentMiddle.y = Integer.MIN_VALUE;
             int i = 0;
             for (Point point : parentNodes) {
-                parentMiddle.x += point.x;
                 if (point.y > parentMiddle.y)
                     parentMiddle.y = point.y;
+                parentMiddle.x += point.x;
                 i++;
             }
             parentMiddle.x /= i;
-            parentMiddle.y += spacing;
-
-            LinkedList<Point> childNodes = new LinkedList<>();
-            for (Panel panel : group.getChildren()) {
-                int childX = panel.getX() + panel.getWidth() / 2;
-                int childY = panel.getY();
-                childNodes.add(new Point(childX, childY));
-            }
-
-            Point childMiddle = new Point();
-            childMiddle.y = Integer.MAX_VALUE;
-            for (Point point : childNodes) {
-                if (point.y < childMiddle.y)
-                    childMiddle.y = point.y;
-            }
-            childMiddle.x = parentMiddle.x;
-            childMiddle.y -= spacing;
+            parentMiddle.y += (childMiddle.y - parentMiddle.y) / 5;
 
             g2.setColor(Color.blue);
             for (Point point : parentNodes)
@@ -429,16 +432,6 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         // TODO: Zoom ContentPanel
-        int diff = 0;
-        if (e.getWheelRotation() > 0) {
-            diff = -3;
-        }
-        else if (e.getWheelRotation() < 0) {
-            diff = 3;
-        }
-
-        for (Panel panel : panelList)
-            panel.setWidth(panel.getWidth() + diff);
     }
 
     private boolean renamePanelDialog(String oldName) {
@@ -452,6 +445,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             String name = field.getText();
             if (!name.equals("")) {
                 renamePanel(oldName, name);
+                repaint();
                 return true;
             }
         }

@@ -49,10 +49,6 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
         setBounds(getX(), getY(), width + 10, height + 10);
     }
 
-    public void setWidth(int width) {
-        setSize(width, getHeight());
-    }
-
     public void select() {
         selected = true;
     }

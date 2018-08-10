@@ -6,6 +6,7 @@ import java.io.*;
 
 // TODO: Zoom
 // TODO: Automatisches Sortieren
+// TODO: Zu best. Panel Vorfahren anzeigen
 public class Main {
     private JFrame frame;
     private JPanel backgroundPanel;
