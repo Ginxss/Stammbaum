@@ -4,9 +4,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
 
-// Dieser Commit: Draw-Bug am oberen Bildschirm behoben
-// Nach Person suchen implementiert
-
 // TODO: Zoom
 // TODO: Automatisches Sortieren
 public class Main {
@@ -84,8 +81,15 @@ public class Main {
         JMenuItem menuItemSearchPanel = new JMenuItem("Nach Person Suchen");
         menuItemSearchPanel.addActionListener((e) -> search());
 
+        JMenuItem menuItemClear = new JMenuItem("Alles Löschen");
+        menuItemClear.addActionListener((e) -> {
+            contentPanel.clear();
+            contentPanel.repaint();
+        });
+
         editMenu.add(menuItemDeleteSelected);
         editMenu.add(menuItemSearchPanel);
+        editMenu.add(menuItemClear);
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
@@ -149,7 +153,7 @@ public class Main {
         JTextField field = new JTextField();
         field.addAncestorListener(new RequestFocusListener());
 
-        JComponent[] inputs = new JComponent[] {new JLabel("Name"), field};
+        JComponent[] inputs = new JComponent[] {new JLabel("Name:"), field};
 
         int option = JOptionPane.showConfirmDialog(frame, inputs, "Neue Person", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {

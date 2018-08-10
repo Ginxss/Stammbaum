@@ -253,6 +253,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             childMiddle.x = parentMiddle.x;
             childMiddle.y -= spacing;
 
+            g2.setColor(Color.blue);
             for (Point point : parentNodes)
                 g2.drawLine(point.x, point.y, parentMiddle.x, parentMiddle.y);
 
@@ -261,7 +262,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 g2.setStroke(new BasicStroke(2));
             }
             else {
-                g2.setColor(Color.black);
+                g2.setColor(Color.blue);
                 g2.setStroke(new BasicStroke(1));
             }
 
@@ -428,6 +429,16 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         // TODO: Zoom ContentPanel
+        int diff = 0;
+        if (e.getWheelRotation() > 0) {
+            diff = -3;
+        }
+        else if (e.getWheelRotation() < 0) {
+            diff = 3;
+        }
+
+        for (Panel panel : panelList)
+            panel.setWidth(panel.getWidth() + diff);
     }
 
     private boolean renamePanelDialog(String oldName) {
