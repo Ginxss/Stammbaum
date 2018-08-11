@@ -6,7 +6,6 @@ import java.io.*;
 
 // TODO: Zoom
 // TODO: Automatisches Sortieren
-// TODO: Zu best. Panel Vorfahren anzeigen
 public class Main {
     private JFrame frame;
     private JPanel backgroundPanel;
@@ -30,13 +29,14 @@ public class Main {
         addComponents();
 
         contentPanel.newPanel("Vater", 10, 10);
-        contentPanel.newPanel("Mutter", 100, 10);
+        /*contentPanel.newPanel("Mutter", 100, 10);
         contentPanel.newPanel("Kind 1", 10, 200);
         contentPanel.newPanel("Kind 2", 100, 200);
         contentPanel.newRelation(contentPanel.getPanel("Kind 1"), contentPanel.getPanel("Vater"), Relation.Type.CHILD);
         contentPanel.newRelation(contentPanel.getPanel("Kind 1"), contentPanel.getPanel("Mutter"), Relation.Type.CHILD);
         contentPanel.newRelation(contentPanel.getPanel("Kind 2"), contentPanel.getPanel("Vater"), Relation.Type.CHILD);
-        contentPanel.newRelation(contentPanel.getPanel("Kind 2"), contentPanel.getPanel("Mutter"), Relation.Type.CHILD);
+        contentPanel.newRelation(contentPanel.getPanel("Kind 2"), contentPanel.getPanel("Mutter"), Relation.Type.CHILD);*/
+        //open();
 
         frame.repaint();
         frame.revalidate();

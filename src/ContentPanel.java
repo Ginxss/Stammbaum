@@ -454,7 +454,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     }
 
     class PanelRightClickMenu extends JPopupMenu {
-        private JMenuItem deletePanel, childRelationTo, renamePanel;
+        private JMenuItem deletePanel, childRelationTo, renamePanel, displayAncestors;
 
         public PanelRightClickMenu(Panel panel) {
             deletePanel = new JMenuItem("Löschen");
@@ -463,18 +463,28 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 ContentPanel.this.repaint();
             });
 
+            renamePanel = new JMenuItem("Umbenennen");
+            renamePanel.addActionListener((e) -> renamePanelDialog(panel.getName()));
+
+            displayAncestors = new JMenuItem("Vorfahren anzeigen");
+            displayAncestors.addActionListener((e) -> {
+                Container p = ContentPanel.this;
+                while (!(p instanceof JFrame))
+                    p = p.getParent();
+
+                AncestorDialog ad = new AncestorDialog((JFrame)p, panel, relationList);
+            });
+
             childRelationTo = new JMenuItem("ist Kind von ...");
             childRelationTo.addActionListener((e) -> {
                 createRelationSrcPanel = panel;
                 creatingRelation = true;
             });
 
-            renamePanel = new JMenuItem("Umbenennen");
-            renamePanel.addActionListener((e) -> renamePanelDialog(panel.getName()));
-
             add(deletePanel);
-            add(childRelationTo);
             add(renamePanel);
+            add(displayAncestors);
+            add(childRelationTo);
         }
     }
 }
