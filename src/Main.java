@@ -82,7 +82,7 @@ public class Main {
         JMenuItem menuItemSearchPanel = new JMenuItem("Nach Person Suchen");
         menuItemSearchPanel.addActionListener((e) -> search());
 
-        JMenuItem menuItemClear = new JMenuItem("Alles Löschen");
+        JMenuItem menuItemClear = new JMenuItem("Alles löschen");
         menuItemClear.addActionListener((e) -> {
             contentPanel.clear();
             contentPanel.repaint();

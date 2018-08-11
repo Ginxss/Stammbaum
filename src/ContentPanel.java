@@ -132,11 +132,26 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     }
 
     public void updateSelectedPanels() {
-        selectedPanels.clear();
+        // Was ist performanter???
+        /*selectedPanels.clear();
         for (int i = 0; i < panelList.size(); i++) {
             Panel panel = panelList.get(i);
             if (panel.isSelected())
                 selectedPanels.add(i);
+        }*/
+
+        for (int i = 0; i < selectedPanels.size(); i++) {
+            int pos = selectedPanels.get(i);
+            if (!panelList.get(pos).isSelected()) {
+                selectedPanels.remove(pos);
+            }
+        }
+
+        for (int i = 0; i < panelList.size(); i++) {
+            Panel panel = panelList.get(i);
+            if (panel.isSelected() && !panelPositions.contains(i)) {
+                selectedPanels.add(i);
+            }
         }
     }
 
@@ -178,6 +193,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
     }
 
+    // Performanter machen.
     private void drawRelations(Graphics2D g2) {
         LinkedList<Relation> usedChildRelations = new LinkedList<>();
         LinkedList<ChildParentGroup> groups = new LinkedList<>();
@@ -216,7 +232,6 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             }
         }
 
-        int spacing = 30;
         for (ChildParentGroup group : groups) {
             LinkedList<Point> childNodes = new LinkedList<>();
             for (Panel panel : group.getChildren()) {
@@ -356,9 +371,16 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             initialMousePos.x = e.getXOnScreen();
             initialMousePos.y = e.getYOnScreen();
 
-            panelPositions.clear();
-            for (Panel panel : panelList)
-                panelPositions.add(panel.getLocation());
+            // Aus Performancegünden werden die bereits vorhandenen Positionen nur bearbeitet.
+            for (int i = 0; i < panelList.size(); i++) {
+                if (i < panelPositions.size()) {
+                    panelPositions.get(i).x = panelList.get(i).getX();
+                    panelPositions.get(i).y = panelList.get(i).getY();
+                }
+                else {
+                    panelPositions.add(panelList.get(i).getLocation());
+                }
+            }
 
             updateSelectedPanels();
         }
@@ -374,8 +396,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     @Override
     public void mouseReleased(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e)) {
-            for (int i = 0; i < panelList.size(); i++) {
-                Panel panel = panelList.get(i);
+            for (Panel panel : panelList) {
                 if (!panel.isSelected()) {
                     int middleX = panel.getX() + panel.getWidth() / 2;
                     int middleY = panel.getY() + panel.getHeight() / 2;
@@ -405,12 +426,16 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             int diffY = e.getYOnScreen() - initialMousePos.y;
 
             if (selectedPanels.isEmpty()) {
-                for (int i = 0; i < panelList.size(); i++)
-                    panelList.get(i).setLocation(panelPositions.get(i).x + diffX, panelPositions.get(i).y + diffY);
+                for (int i = 0; i < panelList.size(); i++) {
+                    Point panelPos = panelPositions.get(i);
+                    panelList.get(i).setLocation(panelPos.x + diffX, panelPos.y + diffY);
+                }
             }
             else {
-                for (int i : selectedPanels)
+                for (int i : selectedPanels) {
+                    Point panelPos = panelPositions.get(i);
                     panelList.get(i).setLocation(panelPositions.get(i).x + diffX, panelPositions.get(i).y + diffY);
+                }
             }
         }
         else if (SwingUtilities.isLeftMouseButton(e)) {
