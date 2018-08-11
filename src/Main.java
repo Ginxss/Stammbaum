@@ -4,7 +4,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
 
-// TODO: Zoom
+// TODO: Zoom -> in "Map" Format umschalten, mit Viereck als Cursor, wenn man klickt, kommt man genau da hin.
 // TODO: Automatisches Sortieren
 public class Main {
     private JFrame frame;

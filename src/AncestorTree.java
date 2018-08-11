@@ -19,12 +19,6 @@ class AncestorTree {
         root = new Node(rootName);
     }
 
-    public LinkedList<Node> getLevel(int level) {
-        levelList = new LinkedList<>();
-        traverse(root, 0, level);
-        return levelList;
-    }
-
     private void traverse(Node start, int level, int wantedLevel) {
         if (level == wantedLevel) {
             levelList.add(start);
