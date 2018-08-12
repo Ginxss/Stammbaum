@@ -31,7 +31,6 @@ public class FamilyDialog extends JDialog {
                 Graphics2D g2 = (Graphics2D)g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // ??
                 resizeLabels(familyTree.root, 0, backgroundPanel.getWidth(), 1);
                 drawLines(familyTree.root, g2);
             }

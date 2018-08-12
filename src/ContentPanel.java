@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -167,7 +168,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         Panel panel = getPanel(name);
         if (panel != null) {
             Point oldLocation = panel.getLocation();
-            panel.setLocation(getWidth()/2 - panel.getWidth()/2, getHeight()/5);//getHeight()/2 - panel.getHeight()/2);
+            panel.setLocation(getWidth()/2 - panel.getWidth()/2, getHeight()/5);
             Point diff = new Point(panel.getX() - oldLocation.x, panel.getY() - oldLocation.y);
             for (Panel panel1 : panelList) {
                 if (panel1 != panel)
@@ -476,6 +477,47 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         }
 
         return false;
+    }
+
+    public BufferedImage takeSnapShot(){
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        LinkedList<Point> orgPos = new LinkedList<>();
+
+        for (Panel panel : panelList) {
+            orgPos.add(panel.getLocation());
+
+            if (panel.getX() < minX)
+                minX = panel.getX();
+            if (panel.getY() < minY)
+                minY = panel.getY();
+        }
+
+        for (Panel panel : panelList)
+            panel.setLocation(panel.getX() - minX, panel.getY() - minY);
+
+        int orgWidth = getWidth();
+        int orgHeight = getHeight();
+        int maxWidth = orgWidth;
+        int maxHeight = orgHeight;
+        for (Panel panel : panelList) {
+            if (panel.getX() + panel.getWidth() > maxWidth)
+                maxWidth = panel.getX() + panel.getWidth();
+            if (panel.getY() + panel.getHeight() > maxHeight)
+                maxHeight = panel.getY() + panel.getHeight();
+        }
+
+        setSize(maxWidth, maxHeight);
+        BufferedImage img = new BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_RGB);
+
+        paint(img.createGraphics());
+
+        for (int i = 0; i < panelList.size(); i++)
+            panelList.get(i).setLocation(orgPos.get(i));
+
+        setSize(orgWidth, orgHeight);
+
+        return img;
     }
 
     class PanelRightClickMenu extends JPopupMenu {

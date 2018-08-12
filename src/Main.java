@@ -1,7 +1,9 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 
 // TODO: Zoom -> in "Map" Format umschalten, mit Viereck als Cursor, wenn man klickt, kommt man genau da hin.
@@ -10,10 +12,12 @@ public class Main {
     private JFrame frame;
     private JPanel backgroundPanel;
 
+    private JPanel cardPanel;
     private ContentPanel contentPanel;
+    private NavModePanel navModePanel;
 
     private JPanel taskBarPanel;
-    private JButton newPanelButton, newRelationButton, deletePanelButton, deleteRelationButton;
+    private JButton newPanelButton, newRelationButton, deletePanelButton, deleteRelationButton, navModeButton;
 
     public static void main(String[] args) {
         new Main();
@@ -29,14 +33,13 @@ public class Main {
         addComponents();
 
         contentPanel.newPanel("Vater", 10, 10);
-        /*contentPanel.newPanel("Mutter", 100, 10);
+        contentPanel.newPanel("Mutter", 100, 10);
         contentPanel.newPanel("Kind 1", 10, 200);
         contentPanel.newPanel("Kind 2", 100, 200);
         contentPanel.newRelation(contentPanel.getPanel("Kind 1"), contentPanel.getPanel("Vater"), Relation.Type.CHILD);
         contentPanel.newRelation(contentPanel.getPanel("Kind 1"), contentPanel.getPanel("Mutter"), Relation.Type.CHILD);
         contentPanel.newRelation(contentPanel.getPanel("Kind 2"), contentPanel.getPanel("Vater"), Relation.Type.CHILD);
-        contentPanel.newRelation(contentPanel.getPanel("Kind 2"), contentPanel.getPanel("Mutter"), Relation.Type.CHILD);*/
-        //open();
+        contentPanel.newRelation(contentPanel.getPanel("Kind 2"), contentPanel.getPanel("Mutter"), Relation.Type.CHILD);
 
         frame.repaint();
         frame.revalidate();
@@ -51,8 +54,12 @@ public class Main {
 
         backgroundPanel = new JPanel(new BorderLayout());
 
+        cardPanel = new JPanel(new CardLayout());
+
         contentPanel = new ContentPanel();
         contentPanel.setComponentPopupMenu(new ContentPanelRightClickMenu());
+
+        navModePanel = new NavModePanel();
     }
 
     private void createMenu() {
@@ -130,6 +137,14 @@ public class Main {
         deleteRelationButton = new JButton(new ImageIcon("deleteRelation.png"));
         deleteRelationButton.addActionListener((e) -> deleteRelationDialog());
 
+        navModeButton = new JButton("NavMode");
+        navModeButton.addActionListener((e) -> {
+            BufferedImage img = contentPanel.takeSnapShot();
+            navModePanel.setContentImg(img);
+            CardLayout cl = (CardLayout)cardPanel.getLayout();
+            cl.next(cardPanel);
+        });
+
         Dimension space = new Dimension(5, 5);
         taskBarPanel.add(newPanelButton);
         taskBarPanel.add(Box.createRigidArea(space));
@@ -139,10 +154,13 @@ public class Main {
         taskBarPanel.add(Box.createRigidArea(space));
         taskBarPanel.add(deleteRelationButton);
         taskBarPanel.add(Box.createRigidArea(space));
+        taskBarPanel.add(navModeButton);
     }
 
     private void addComponents() {
-        backgroundPanel.add(contentPanel, BorderLayout.CENTER);
+        cardPanel.add(contentPanel, "ContentPanel");
+        cardPanel.add(navModePanel, "NavMode");
+        backgroundPanel.add(cardPanel, BorderLayout.CENTER);
         backgroundPanel.add(taskBarPanel, BorderLayout.NORTH);
         frame.getContentPane().add(backgroundPanel);
         frame.setVisible(true);
