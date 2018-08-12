@@ -158,8 +158,8 @@ public class Main {
     }
 
     private void addComponents() {
-        cardPanel.add(contentPanel, "ContentPanel");
-        cardPanel.add(navModePanel, "NavMode");
+        cardPanel.add(contentPanel);
+        cardPanel.add(navModePanel);
         backgroundPanel.add(cardPanel, BorderLayout.CENTER);
         backgroundPanel.add(taskBarPanel, BorderLayout.NORTH);
         frame.getContentPane().add(backgroundPanel);
