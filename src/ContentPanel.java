@@ -22,6 +22,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     private Point createRelationTarget;
     public static boolean creatingRelation = false;
 
+    private boolean drawBorder;
+
     public ContentPanel() {
         super(null);
 
@@ -42,6 +44,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         drawSelectionRectangle = false;
 
         createRelationTarget = new Point();
+
+        drawBorder = false;
     }
 
     public Panel getPanel(int i) {
@@ -190,8 +194,10 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
         drawCreatingRelation(g2);
 
-        g2.setColor(Color.black);
-        g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+        if (drawBorder) {
+            g2.setColor(Color.black);
+            g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+        }
     }
 
     // Performanter machen.
@@ -479,7 +485,9 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         return false;
     }
 
-    public BufferedImage takeSnapShot(){
+    public BufferedImage takeSnapShot() {
+        drawBorder = false;
+
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         LinkedList<Point> orgPos = new LinkedList<>();
@@ -518,6 +526,20 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         setSize(orgWidth, orgHeight);
 
         return img;
+    }
+
+    public Point getPointOnCanvas() {
+        int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
+        for (Panel panel : panelList) {
+            if (panel.getX() < minX)
+                minX = panel.getX();
+            if (panel.getY() < minY)
+                minY = panel.getY();
+        }
+
+        int x = getWidth() / 2 - minX;
+        int y = getHeight() / 2 - minY;
+        return new Point(x, y);
     }
 
     class PanelRightClickMenu extends JPopupMenu {

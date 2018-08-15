@@ -140,9 +140,10 @@ public class Main {
         navModeButton = new JButton("NavMode");
         navModeButton.addActionListener((e) -> {
             BufferedImage img = contentPanel.takeSnapShot();
-            navModePanel.setContentImg(img);
             CardLayout cl = (CardLayout)cardPanel.getLayout();
-            cl.next(cardPanel);
+            navModePanel.init(img, contentPanel.getPointOnCanvas(), contentPanel.getPanelList(), cl);
+
+            cl.show(cardPanel, "NavMode");
         });
 
         Dimension space = new Dimension(5, 5);
@@ -158,8 +159,8 @@ public class Main {
     }
 
     private void addComponents() {
-        cardPanel.add(contentPanel);
-        cardPanel.add(navModePanel);
+        cardPanel.add(contentPanel, "Content");
+        cardPanel.add(navModePanel, "NavMode");
         backgroundPanel.add(cardPanel, BorderLayout.CENTER);
         backgroundPanel.add(taskBarPanel, BorderLayout.NORTH);
         frame.getContentPane().add(backgroundPanel);
