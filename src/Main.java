@@ -1,4 +1,3 @@
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -6,7 +5,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
-// TODO: Zoom -> in "Map" Format umschalten, mit Viereck als Cursor, wenn man klickt, kommt man genau da hin.
 // TODO: Automatisches Sortieren
 public class Main {
     private JFrame frame;
@@ -17,7 +15,6 @@ public class Main {
     private NavModePanel navModePanel;
 
     private JPanel taskBarPanel;
-    private JButton newPanelButton, newRelationButton, deletePanelButton, deleteRelationButton, navModeButton;
 
     public static void main(String[] args) {
         new Main();
@@ -125,19 +122,19 @@ public class Main {
         taskBarPanel.setBackground(Color.decode("#bac7d8"));
         taskBarPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        newPanelButton = new JButton(new ImageIcon("newPanel.png"));
+        JButton newPanelButton = new JButton(new ImageIcon("newPanel.png"));
         newPanelButton.addActionListener((e) -> newPanelDialog());
 
-        newRelationButton = new JButton(new ImageIcon("newRelation.png"));
+        JButton newRelationButton = new JButton(new ImageIcon("newRelation.png"));
         newRelationButton.addActionListener((e) -> newRelationDialog());
 
-        deletePanelButton = new JButton(new ImageIcon("deletePanel.png"));
+        JButton deletePanelButton = new JButton(new ImageIcon("deletePanel.png"));
         deletePanelButton.addActionListener((e) -> deletePanelDialog());
 
-        deleteRelationButton = new JButton(new ImageIcon("deleteRelation.png"));
+        JButton deleteRelationButton = new JButton(new ImageIcon("deleteRelation.png"));
         deleteRelationButton.addActionListener((e) -> deleteRelationDialog());
 
-        navModeButton = new JButton("NavMode");
+        JButton navModeButton = new JButton(new ImageIcon("navmode.png"));
         navModeButton.addActionListener((e) -> {
             BufferedImage img = contentPanel.takeSnapShot();
             CardLayout cl = (CardLayout)cardPanel.getLayout();
@@ -259,15 +256,15 @@ public class Main {
             try (FileWriter fw = new FileWriter(fileChooser.getSelectedFile())) {
                 fw.write("P:" + System.lineSeparator());
                 for (Panel panel : contentPanel.getPanelList()) {
-                    fw.append(panel.getName() + System.lineSeparator());
-                    fw.append(panel.getX() + System.lineSeparator());
-                    fw.append(panel.getY() + System.lineSeparator());
+                    fw.append(panel.getName()).append(System.lineSeparator());
+                    fw.append(String.valueOf(panel.getX())).append(System.lineSeparator());
+                    fw.append(String.valueOf(panel.getY())).append(System.lineSeparator());
                 }
 
                 fw.write("R:" + System.lineSeparator());
                 for (Relation relation : contentPanel.getRelationList().getAllRelations()) {
-                    fw.append(relation.srcPanel.getName() + System.lineSeparator());
-                    fw.append(relation.targetPanel.getName() + System.lineSeparator());
+                    fw.append(relation.srcPanel.getName()).append(System.lineSeparator());
+                    fw.append(relation.targetPanel.getName()).append(System.lineSeparator());
                 }
             } catch (IOException e) {
                 e.printStackTrace();

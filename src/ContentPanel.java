@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.LinkedList;
 
+// TODO: Aufsplitten in GUI und Data
 public class ContentPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener {
     private LinkedList<Panel> panelList;
     private RelationList relationList;
@@ -318,16 +319,12 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 drawH = -h;
             }
             else if (h < 0) {
-                drawX = x;
                 drawY = y + h;
-                drawW = w;
                 drawH = -h;
             }
             else if (w < 0) {
                 drawX = x + w;
-                drawY = y;
                 drawW = -w;
-                drawH = h;
             }
 
             normedSelectionRectangle.setBounds(drawX, drawY, drawW, drawH);
@@ -441,7 +438,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             else {
                 for (int i : selectedPanels) {
                     Point panelPos = panelPositions.get(i);
-                    panelList.get(i).setLocation(panelPositions.get(i).x + diffX, panelPositions.get(i).y + diffY);
+                    panelList.get(i).setLocation(panelPos.x + diffX, panelPos.y + diffY);
                 }
             }
         }
@@ -462,9 +459,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     }
 
     @Override
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        // TODO: Zoom ContentPanel
-    }
+    public void mouseWheelMoved(MouseWheelEvent e) {}
 
     private boolean renamePanelDialog(String oldName) {
         JTextField field = new JTextField();
@@ -529,7 +524,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     }
 
     public Point getPointOnCanvas() {
-        int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
         for (Panel panel : panelList) {
             if (panel.getX() < minX)
                 minX = panel.getX();
@@ -561,7 +557,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 while (!(p instanceof JFrame))
                     p = p.getParent();
 
-                FamilyDialog fd = new FamilyDialog((JFrame)p, panel, relationList, FamilyDialog.Type.ANCESTOR);
+                new FamilyDialog((JFrame)p, panel, relationList, FamilyDialog.Type.ANCESTOR);
             });
 
             displayDescendants = new JMenuItem("Nachfahren anzeigen");
@@ -570,7 +566,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 while (!(p instanceof JFrame))
                     p = p.getParent();
 
-                FamilyDialog fd = new FamilyDialog((JFrame)p, panel, relationList, FamilyDialog.Type.DESCENDANTS);
+                new FamilyDialog((JFrame)p, panel, relationList, FamilyDialog.Type.DESCENDANTS);
             });
 
             childRelationTo = new JMenuItem("ist Kind von ...");

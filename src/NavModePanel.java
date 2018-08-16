@@ -6,16 +6,16 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 
-// Funktioniert, kann aber bestimmt noch schöner gemacht werden...
 public class NavModePanel extends JPanel implements MouseListener, MouseMotionListener {
     private BufferedImage contentImg;
+
     private double ratio;
+    private double scalingFactor;
     private Point mousePos;
 
     private Point beginPoint;
     private LinkedList<Panel> panelList;
     private CardLayout cl;
-    private double scalingFactor;
 
     public NavModePanel() {
         addMouseListener(this);
@@ -53,7 +53,7 @@ public class NavModePanel extends JPanel implements MouseListener, MouseMotionLi
         int previewWidth = panelWidth / 2;
         int previewHeight = panelHeight / 2;
 
-        int scaleWidth = panelWidth / 2;
+        int scaleWidth = panelWidth - previewWidth;
         int scaleHeight = (int)(scaleWidth * ratio);
         if (scaleHeight > panelHeight) {
             scaleHeight = panelHeight;
@@ -63,6 +63,7 @@ public class NavModePanel extends JPanel implements MouseListener, MouseMotionLi
 
         double widthScaleRatio = (double)scaleWidth / imgWidth;
         double heightScaleRatio = (double)scaleHeight / imgHeight;
+
         int cursorWidth = (int)(panelWidth * widthScaleRatio);
         int cursorHeight = (int)(panelHeight * heightScaleRatio);
         int cursorX = mousePos.x- cursorWidth / 2;
