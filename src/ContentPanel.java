@@ -5,15 +5,11 @@ import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.LinkedList;
 
-// TODO: Aufsplitten in GUI und Data
 public class ContentPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener {
-    private LinkedList<Panel> panelList;
-    private RelationList relationList;
+    private Content content;
 
     private Point initialMousePos;
     private LinkedList<Point> panelPositions;
-
-    private LinkedList<Integer> selectedPanels;
 
     private Rectangle selectionRectangle;
     private Rectangle normedSelectionRectangle;
@@ -32,13 +28,10 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         addMouseMotionListener(this);
         addMouseWheelListener(this);
 
-        panelList = new LinkedList<>();
-        relationList = new RelationList();
+        content = new Content();
 
         initialMousePos = new Point();
         panelPositions = new LinkedList<>();
-
-        selectedPanels = new LinkedList<>();
 
         selectionRectangle = new Rectangle();
         normedSelectionRectangle = new Rectangle();
@@ -49,133 +42,42 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         drawBorder = false;
     }
 
-    public Panel getPanel(int i) {
-        return panelList.get(i);
-    }
-
-    public Panel getPanel(String name) {
-        for (Panel panel : panelList) {
-            if (panel.getName().equals(name)) {
-                return panel;
-            }
-        }
-        return null;
-    }
-
-    public LinkedList<Panel> getPanelList() {
-        return panelList;
-    }
-
-    public RelationList getRelationList() {
-        return relationList;
-    }
-
-    public LinkedList<Integer> getSelectedPanels() {
-        return selectedPanels;
+    public Content getContent() {
+        return content;
     }
 
     public Panel newPanel(String name, int x, int y) {
-        for (Panel panel : panelList) {
-            if (panel.getName().equals(name))
-                return null;
+        Panel panel = content.newPanel(name, x, y);
+        if (panel != null) {
+            panel.setComponentPopupMenu(new PanelRightClickMenu(panel));
+            add(panel);
         }
-
-        Panel panel = new Panel(name, x, y);
-        panel.setComponentPopupMenu(new PanelRightClickMenu(panel));
-        panelList.add(panel);
-        add(panel);
         return panel;
     }
 
-    public Relation newRelation(Panel srcPanel, Panel targetPanel, Relation.Type type) {
-        if (relationList.hasRelation(srcPanel, targetPanel, type))
-            return null;
-
-        Relation relation = new Relation(srcPanel, targetPanel, Relation.Type.CHILD);
-        relationList.add(relation);
-        return relation;
-    }
-
-    public boolean deletePanel(int j) {
-        Panel panel = getPanel(j);
-        return delete_panel(panel);
+    public boolean deletePanel(int i) {
+        remove(content.getPanel(i));
+        return content.deletePanel(i);
     }
 
     public boolean deletePanel(String name) {
-        Panel panel = getPanel(name);
-        return delete_panel(panel);
-    }
-
-    private boolean delete_panel(Panel panel) {
-        if (panel != null) {
-            relationList.removeRelationsWith(panel);
-            panelList.remove(panel);
-            remove(panel);
-            return true;
-        }
-        return false;
-    }
-
-    public boolean deleteRelation(String srcName, String targetName, Relation.Type type) {
-        return relationList.remove(srcName, targetName, type);
-    }
-
-    public boolean renamePanel(String oldName, String newName) {
-        Panel panel = getPanel(oldName);
-        if (panel != null) {
-            if (!nameExists(newName))
-                panel.setName(newName);
-        }
-        return false;
+        remove(content.getPanel(name));
+        return content.deletePanel(name);
     }
 
     public void clear() {
-        relationList.clear();
-
-        for (Panel panel : panelList)
+        for (Panel panel : content.getPanelList())
             remove(panel);
-        panelList.clear();
-    }
-
-    public void updateSelectedPanels() {
-        // Was ist performanter???
-        /*selectedPanels.clear();
-        for (int i = 0; i < panelList.size(); i++) {
-            Panel panel = panelList.get(i);
-            if (panel.isSelected())
-                selectedPanels.add(i);
-        }*/
-
-        for (int i = 0; i < selectedPanels.size(); i++) {
-            int pos = selectedPanels.get(i);
-            if (!panelList.get(pos).isSelected()) {
-                selectedPanels.remove(pos);
-            }
-        }
-
-        for (int i = 0; i < panelList.size(); i++) {
-            Panel panel = panelList.get(i);
-            if (panel.isSelected() && !panelPositions.contains(i)) {
-                selectedPanels.add(i);
-            }
-        }
-    }
-
-    public boolean nameExists(String name) {
-        for (Panel panel : panelList) {
-            if (panel.getName().equals(name))
-                return true;
-        }
-        return false;
+        content.clear();
     }
 
     public void searchFor(String name) {
-        Panel panel = getPanel(name);
+        Panel panel = content.getPanel(name);
         if (panel != null) {
             Point oldLocation = panel.getLocation();
             panel.setLocation(getWidth()/2 - panel.getWidth()/2, getHeight()/5);
             Point diff = new Point(panel.getX() - oldLocation.x, panel.getY() - oldLocation.y);
-            for (Panel panel1 : panelList) {
+            for (Panel panel1 : content.getPanelList()) {
                 if (panel1 != panel)
                     panel1.setLocation(panel1.getX() + diff.x, panel1.getY() + diff.y);
             }
@@ -206,13 +108,13 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         LinkedList<Relation> usedChildRelations = new LinkedList<>();
         LinkedList<ChildParentGroup> groups = new LinkedList<>();
 
-        for (Relation relation : relationList.getChildRelations()) {
+        for (Relation relation : content.getRelationList().getChildRelations()) {
             if (!usedChildRelations.contains(relation)) {
                 Panel c = relation.srcPanel;
                 Collection<Panel> parents = new LinkedList<>();
                 parents.add(relation.targetPanel);
 
-                for (Relation relation1 : relationList.getChildRelations()) {
+                for (Relation relation1 : content.getRelationList().getChildRelations()) {
                     if (relation != relation1) {
                         if (relation.srcPanel == relation1.srcPanel) {
                             parents.add(relation1.targetPanel);
@@ -357,14 +259,14 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 if (e.getSource() instanceof Panel) {
                     Panel targetPanel = (Panel)e.getSource();
                     if (createRelationSrcPanel != targetPanel)
-                        newRelation(createRelationSrcPanel, targetPanel, Relation.Type.CHILD);
+                        content.newRelation(createRelationSrcPanel, targetPanel, Relation.Type.CHILD);
                 }
                 repaint();
             }
             else {
-                for (Panel panel : panelList)
+                for (Panel panel : content.getPanelList())
                     panel.unselect();
-                selectedPanels.clear();
+                content.getSelectedPanels().clear();
             }
         }
     }
@@ -376,17 +278,17 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             initialMousePos.y = e.getYOnScreen();
 
             // Aus Performancegünden werden die bereits vorhandenen Positionen nur bearbeitet.
-            for (int i = 0; i < panelList.size(); i++) {
+            for (int i = 0; i < content.getPanelList().size(); i++) {
                 if (i < panelPositions.size()) {
-                    panelPositions.get(i).x = panelList.get(i).getX();
-                    panelPositions.get(i).y = panelList.get(i).getY();
+                    panelPositions.get(i).x = content.getPanel(i).getX();
+                    panelPositions.get(i).y = content.getPanel(i).getY();
                 }
                 else {
-                    panelPositions.add(panelList.get(i).getLocation());
+                    panelPositions.add(content.getPanel(i).getLocation());
                 }
             }
 
-            updateSelectedPanels();
+            content.updateSelectedPanels();
         }
         else if (SwingUtilities.isLeftMouseButton(e)) {
             if (!creatingRelation) {
@@ -400,7 +302,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     @Override
     public void mouseReleased(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e)) {
-            for (Panel panel : panelList) {
+            for (Panel panel : content.getPanelList()) {
                 if (!panel.isSelected()) {
                     int middleX = panel.getX() + panel.getWidth() / 2;
                     int middleY = panel.getY() + panel.getHeight() / 2;
@@ -429,16 +331,16 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             int diffX = e.getXOnScreen() - initialMousePos.x;
             int diffY = e.getYOnScreen() - initialMousePos.y;
 
-            if (selectedPanels.isEmpty()) {
-                for (int i = 0; i < panelList.size(); i++) {
+            if (content.getSelectedPanels().isEmpty()) {
+                for (int i = 0; i < content.getPanelList().size(); i++) {
                     Point panelPos = panelPositions.get(i);
-                    panelList.get(i).setLocation(panelPos.x + diffX, panelPos.y + diffY);
+                    content.getPanel(i).setLocation(panelPos.x + diffX, panelPos.y + diffY);
                 }
             }
             else {
-                for (int i : selectedPanels) {
+                for (int i : content.getSelectedPanels()) {
                     Point panelPos = panelPositions.get(i);
-                    panelList.get(i).setLocation(panelPos.x + diffX, panelPos.y + diffY);
+                    content.getPanel(i).setLocation(panelPos.x + diffX, panelPos.y + diffY);
                 }
             }
         }
@@ -471,7 +373,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         if (option == JOptionPane.OK_OPTION) {
             String name = field.getText();
             if (!name.equals("")) {
-                renamePanel(oldName, name);
+                content.renamePanel(oldName, name);
                 repaint();
                 return true;
             }
@@ -487,7 +389,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         int minY = Integer.MAX_VALUE;
         LinkedList<Point> orgPos = new LinkedList<>();
 
-        for (Panel panel : panelList) {
+        for (Panel panel : content.getPanelList()) {
             orgPos.add(panel.getLocation());
 
             if (panel.getX() < minX)
@@ -496,14 +398,14 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 minY = panel.getY();
         }
 
-        for (Panel panel : panelList)
+        for (Panel panel : content.getPanelList())
             panel.setLocation(panel.getX() - minX, panel.getY() - minY);
 
         int orgWidth = getWidth();
         int orgHeight = getHeight();
         int maxWidth = orgWidth;
         int maxHeight = orgHeight;
-        for (Panel panel : panelList) {
+        for (Panel panel : content.getPanelList()) {
             if (panel.getX() + panel.getWidth() > maxWidth)
                 maxWidth = panel.getX() + panel.getWidth();
             if (panel.getY() + panel.getHeight() > maxHeight)
@@ -515,8 +417,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
         paint(img.createGraphics());
 
-        for (int i = 0; i < panelList.size(); i++)
-            panelList.get(i).setLocation(orgPos.get(i));
+        for (int i = 0; i < content.getPanelList().size(); i++)
+            content.getPanel(i).setLocation(orgPos.get(i));
 
         setSize(orgWidth, orgHeight);
 
@@ -526,7 +428,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     public Point getPointOnCanvas() {
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
-        for (Panel panel : panelList) {
+        for (Panel panel : content.getPanelList()) {
             if (panel.getX() < minX)
                 minX = panel.getX();
             if (panel.getY() < minY)
@@ -557,7 +459,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 while (!(p instanceof JFrame))
                     p = p.getParent();
 
-                new FamilyDialog((JFrame)p, panel, relationList, FamilyDialog.Type.ANCESTOR);
+                new FamilyDialog((JFrame)p, panel, content.getRelationList(), FamilyDialog.Type.ANCESTOR);
             });
 
             displayDescendants = new JMenuItem("Nachfahren anzeigen");
@@ -566,7 +468,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 while (!(p instanceof JFrame))
                     p = p.getParent();
 
-                new FamilyDialog((JFrame)p, panel, relationList, FamilyDialog.Type.DESCENDANTS);
+                new FamilyDialog((JFrame)p, panel, content.getRelationList(), FamilyDialog.Type.DESCENDANTS);
             });
 
             childRelationTo = new JMenuItem("ist Kind von ...");
