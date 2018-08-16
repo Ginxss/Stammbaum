@@ -42,8 +42,24 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         drawBorder = false;
     }
 
-    public Content getContent() {
-        return content;
+    public LinkedList<Panel> getPanelList() {
+        return content.getPanelList();
+    }
+
+    public RelationList getRelationList() {
+        return content.getRelationList();
+    }
+
+    public LinkedList<Integer> getSelectedPanels() {
+        return content.getSelectedPanels();
+    }
+
+    public Panel getPanel(int i) {
+        return content.getPanel(i);
+    }
+
+    public Panel getPanel(String name) {
+        return content.getPanel(name);
     }
 
     public Panel newPanel(String name, int x, int y) {
@@ -55,6 +71,10 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         return panel;
     }
 
+    public Relation newRelation(Panel srcPanel, Panel targetPanel, Relation.Type type) {
+        return content.newRelation(srcPanel, targetPanel, type);
+    }
+
     public boolean deletePanel(int i) {
         remove(content.getPanel(i));
         return content.deletePanel(i);
@@ -63,6 +83,14 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     public boolean deletePanel(String name) {
         remove(content.getPanel(name));
         return content.deletePanel(name);
+    }
+
+    public boolean deleteRelation(String srcName, String targetName, Relation.Type type) {
+        return content.deleteRelation(srcName, targetName, type);
+    }
+
+    public void updateSelectedPanels() {
+        content.updateSelectedPanels();
     }
 
     public void clear() {
@@ -82,6 +110,64 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                     panel1.setLocation(panel1.getX() + diff.x, panel1.getY() + diff.y);
             }
         }
+    }
+
+    public BufferedImage takeSnapShot() {
+        drawBorder = false;
+
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        LinkedList<Point> orgPos = new LinkedList<>();
+
+        for (Panel panel : content.getPanelList()) {
+            orgPos.add(panel.getLocation());
+
+            if (panel.getX() < minX)
+                minX = panel.getX();
+            if (panel.getY() < minY)
+                minY = panel.getY();
+        }
+
+        for (Panel panel : content.getPanelList())
+            panel.setLocation(panel.getX() - minX, panel.getY() - minY);
+
+        int orgWidth = getWidth();
+        int orgHeight = getHeight();
+        int maxWidth = orgWidth;
+        int maxHeight = orgHeight;
+        for (Panel panel : content.getPanelList()) {
+            if (panel.getX() + panel.getWidth() > maxWidth)
+                maxWidth = panel.getX() + panel.getWidth();
+            if (panel.getY() + panel.getHeight() > maxHeight)
+                maxHeight = panel.getY() + panel.getHeight();
+        }
+
+        setSize(maxWidth, maxHeight);
+        BufferedImage img = new BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_RGB);
+
+        paint(img.createGraphics());
+
+        for (int i = 0; i < content.getPanelList().size(); i++)
+            content.getPanel(i).setLocation(orgPos.get(i));
+
+        setSize(orgWidth, orgHeight);
+
+        return img;
+    }
+
+    public Point getPointOnCanvas() {
+        int minX = Integer.MAX_VALUE;
+        int minY = Integer.MAX_VALUE;
+        for (Panel panel : content.getPanelList()) {
+            if (panel.getX() < minX)
+                minX = panel.getX();
+            if (panel.getY() < minY)
+                minY = panel.getY();
+        }
+
+        int x = getWidth() / 2 - minX;
+        int y = getHeight() / 2 - minY;
+        return new Point(x, y);
     }
 
     @Override
@@ -380,64 +466,6 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         }
 
         return false;
-    }
-
-    public BufferedImage takeSnapShot() {
-        drawBorder = false;
-
-        int minX = Integer.MAX_VALUE;
-        int minY = Integer.MAX_VALUE;
-        LinkedList<Point> orgPos = new LinkedList<>();
-
-        for (Panel panel : content.getPanelList()) {
-            orgPos.add(panel.getLocation());
-
-            if (panel.getX() < minX)
-                minX = panel.getX();
-            if (panel.getY() < minY)
-                minY = panel.getY();
-        }
-
-        for (Panel panel : content.getPanelList())
-            panel.setLocation(panel.getX() - minX, panel.getY() - minY);
-
-        int orgWidth = getWidth();
-        int orgHeight = getHeight();
-        int maxWidth = orgWidth;
-        int maxHeight = orgHeight;
-        for (Panel panel : content.getPanelList()) {
-            if (panel.getX() + panel.getWidth() > maxWidth)
-                maxWidth = panel.getX() + panel.getWidth();
-            if (panel.getY() + panel.getHeight() > maxHeight)
-                maxHeight = panel.getY() + panel.getHeight();
-        }
-
-        setSize(maxWidth, maxHeight);
-        BufferedImage img = new BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_RGB);
-
-        paint(img.createGraphics());
-
-        for (int i = 0; i < content.getPanelList().size(); i++)
-            content.getPanel(i).setLocation(orgPos.get(i));
-
-        setSize(orgWidth, orgHeight);
-
-        return img;
-    }
-
-    public Point getPointOnCanvas() {
-        int minX = Integer.MAX_VALUE;
-        int minY = Integer.MAX_VALUE;
-        for (Panel panel : content.getPanelList()) {
-            if (panel.getX() < minX)
-                minX = panel.getX();
-            if (panel.getY() < minY)
-                minY = panel.getY();
-        }
-
-        int x = getWidth() / 2 - minX;
-        int y = getHeight() / 2 - minY;
-        return new Point(x, y);
     }
 
     class PanelRightClickMenu extends JPopupMenu {

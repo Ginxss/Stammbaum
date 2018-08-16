@@ -33,10 +33,10 @@ public class Main {
         contentPanel.newPanel("Mutter", 100, 10);
         contentPanel.newPanel("Kind 1", 10, 200);
         contentPanel.newPanel("Kind 2", 100, 200);
-        contentPanel.getContent().newRelation(contentPanel.getContent().getPanel("Kind 1"), contentPanel.getContent().getPanel("Vater"), Relation.Type.CHILD);
-        contentPanel.getContent().newRelation(contentPanel.getContent().getPanel("Kind 1"), contentPanel.getContent().getPanel("Mutter"), Relation.Type.CHILD);
-        contentPanel.getContent().newRelation(contentPanel.getContent().getPanel("Kind 2"), contentPanel.getContent().getPanel("Vater"), Relation.Type.CHILD);
-        contentPanel.getContent().newRelation(contentPanel.getContent().getPanel("Kind 2"), contentPanel.getContent().getPanel("Mutter"), Relation.Type.CHILD);
+        contentPanel.newRelation(contentPanel.getPanel("Kind 1"), contentPanel.getPanel("Vater"), Relation.Type.CHILD);
+        contentPanel.newRelation(contentPanel.getPanel("Kind 1"), contentPanel.getPanel("Mutter"), Relation.Type.CHILD);
+        contentPanel.newRelation(contentPanel.getPanel("Kind 2"), contentPanel.getPanel("Vater"), Relation.Type.CHILD);
+        contentPanel.newRelation(contentPanel.getPanel("Kind 2"), contentPanel.getPanel("Mutter"), Relation.Type.CHILD);
 
         frame.repaint();
         frame.revalidate();
@@ -74,9 +74,9 @@ public class Main {
 
         JMenuItem menuItemDeleteSelected = new JMenuItem("Auswahl löschen");
         menuItemDeleteSelected.addActionListener((e) -> {
-            contentPanel.getContent().updateSelectedPanels();
-            for (int i = contentPanel.getContent().getPanelList().size() - 1; i >= 0; i--) {
-                if (contentPanel.getContent().getSelectedPanels().contains(i))
+            contentPanel.updateSelectedPanels();
+            for (int i = contentPanel.getPanelList().size() - 1; i >= 0; i--) {
+                if (contentPanel.getSelectedPanels().contains(i))
                     contentPanel.deletePanel(i);
             }
             contentPanel.repaint();
@@ -138,7 +138,7 @@ public class Main {
         navModeButton.addActionListener((e) -> {
             BufferedImage img = contentPanel.takeSnapShot();
             CardLayout cl = (CardLayout)cardPanel.getLayout();
-            navModePanel.init(img, contentPanel.getPointOnCanvas(), contentPanel.getContent().getPanelList(), cl);
+            navModePanel.init(img, contentPanel.getPointOnCanvas(), contentPanel.getPanelList(), cl);
 
             cl.show(cardPanel, "NavMode");
         });
@@ -196,11 +196,11 @@ public class Main {
 
         int option = JOptionPane.showConfirmDialog(frame, inputs, "Neue Beziehung", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
-            Panel srcPanel = contentPanel.getContent().getPanel(srcField.getText());
-            Panel targetPanel = contentPanel.getContent().getPanel(targetField.getText());
+            Panel srcPanel = contentPanel.getPanel(srcField.getText());
+            Panel targetPanel = contentPanel.getPanel(targetField.getText());
             if (srcPanel != null && targetPanel != null) {
                 if (relationTypes.getSelectedItem() == "ist Kind von") {
-                    contentPanel.getContent().newRelation(srcPanel, targetPanel, Relation.Type.CHILD);
+                    contentPanel.newRelation(srcPanel, targetPanel, Relation.Type.CHILD);
                     contentPanel.repaint();
                     contentPanel.revalidate();
                 }
@@ -234,7 +234,7 @@ public class Main {
         int option = JOptionPane.showConfirmDialog(frame, inputs, "Beziehung löschen", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
             if (relationTypes.getSelectedItem() == "ist Kind von") {
-                contentPanel.getContent().deleteRelation(srcField.getText(), targetField.getText(), Relation.Type.CHILD);
+                contentPanel.deleteRelation(srcField.getText(), targetField.getText(), Relation.Type.CHILD);
                 contentPanel.repaint();
                 contentPanel.revalidate();
             }
@@ -255,14 +255,14 @@ public class Main {
 
             try (FileWriter fw = new FileWriter(fileChooser.getSelectedFile())) {
                 fw.write("P:" + System.lineSeparator());
-                for (Panel panel : contentPanel.getContent().getPanelList()) {
+                for (Panel panel : contentPanel.getPanelList()) {
                     fw.append(panel.getName()).append(System.lineSeparator());
                     fw.append(String.valueOf(panel.getX())).append(System.lineSeparator());
                     fw.append(String.valueOf(panel.getY())).append(System.lineSeparator());
                 }
 
                 fw.write("R:" + System.lineSeparator());
-                for (Relation relation : contentPanel.getContent().getRelationList().getAllRelations()) {
+                for (Relation relation : contentPanel.getRelationList().getAllRelations()) {
                     fw.append(relation.srcPanel.getName()).append(System.lineSeparator());
                     fw.append(relation.targetPanel.getName()).append(System.lineSeparator());
                 }
@@ -301,20 +301,20 @@ public class Main {
                         }
 
                         switch (state) {
-                        case 0: {
-                            String name = line;
-                            int x = Integer.parseInt(br.readLine());
-                            int y = Integer.parseInt(br.readLine());
+                            case 0: {
+                                String name = line;
+                                int x = Integer.parseInt(br.readLine());
+                                int y = Integer.parseInt(br.readLine());
 
-                            contentPanel.newPanel(name, x, y);
-                        } break;
+                                contentPanel.newPanel(name, x, y);
+                            } break;
 
-                        case 1: {
-                            String srcName = line;
-                            String targetName = br.readLine();
+                            case 1: {
+                                String srcName = line;
+                                String targetName = br.readLine();
 
-                            contentPanel.getContent().newRelation(contentPanel.getContent().getPanel(srcName), contentPanel.getContent().getPanel(targetName), Relation.Type.CHILD);
-                        } break;
+                                contentPanel.newRelation(contentPanel.getPanel(srcName), contentPanel.getPanel(targetName), Relation.Type.CHILD);
+                            } break;
                         }
                     }
                 } catch (IOException e) {
