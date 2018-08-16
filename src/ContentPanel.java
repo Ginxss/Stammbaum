@@ -189,7 +189,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         }
     }
 
-    // Performanter machen.
+    // Performanter machen. Hier wird es laggy bei vielen Relations.
     private void drawRelations(Graphics2D g2) {
         LinkedList<Relation> usedChildRelations = new LinkedList<>();
         LinkedList<ChildParentGroup> groups = new LinkedList<>();

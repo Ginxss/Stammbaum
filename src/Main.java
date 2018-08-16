@@ -2,10 +2,12 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
 // TODO: Automatisches Sortieren
+// Je mehr auf dem BILDSCHIRM ist, desto laggier, egal wieviel auf dem Panel ist!
 public class Main {
     private JFrame frame;
     private JPanel backgroundPanel;
@@ -63,16 +65,42 @@ public class Main {
         JMenuBar menuBar = new JMenuBar();
 
         JMenu fileMenu = new JMenu("Datei");
+
         JMenuItem menuItemSave = new JMenuItem("Speichern");
-        JMenuItem menuItemOpen = new JMenuItem("Öffnen");
+        menuItemSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
         menuItemSave.addActionListener((e) -> save());
+
+        JMenuItem menuItemOpen = new JMenuItem("Öffnen");
+        menuItemOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
         menuItemOpen.addActionListener((e) -> open());
+
         fileMenu.add(menuItemSave);
         fileMenu.add(menuItemOpen);
 
         JMenu editMenu = new JMenu("Bearbeiten");
 
+        JMenuItem menuItemNewPanel = new JMenuItem("Neue Person");
+        menuItemNewPanel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
+        menuItemNewPanel.addActionListener((e) -> newPanelDialog());
+
+        JMenuItem menuItemNewRelation = new JMenuItem("Neue Beziehung");
+        menuItemNewRelation.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
+        menuItemNewRelation.addActionListener((e) -> newRelationDialog());
+
+        JMenuItem menuItemDeletePanel = new JMenuItem("Person löschen");
+        menuItemDeletePanel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK));
+        menuItemDeletePanel.addActionListener((e) -> deletePanelDialog());
+
+        JMenuItem menuItemDeleteRelation = new JMenuItem("Beziehung löschen");
+        menuItemDeleteRelation.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
+        menuItemDeleteRelation.addActionListener((e) -> deleteRelationDialog());
+
+        JMenuItem menuItemNavMode = new JMenuItem("Navigationsmodus");
+        menuItemNavMode.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK));
+        menuItemNavMode.addActionListener((e) -> enterNavMode());
+
         JMenuItem menuItemDeleteSelected = new JMenuItem("Auswahl löschen");
+        menuItemDeleteSelected.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK));
         menuItemDeleteSelected.addActionListener((e) -> {
             contentPanel.updateSelectedPanels();
             for (int i = contentPanel.getPanelList().size() - 1; i >= 0; i--) {
@@ -83,18 +111,28 @@ public class Main {
             contentPanel.revalidate();
         });
 
-        JMenuItem menuItemSearchPanel = new JMenuItem("Nach Person Suchen");
-        menuItemSearchPanel.addActionListener((e) -> search());
-
         JMenuItem menuItemClear = new JMenuItem("Alles löschen");
+        menuItemClear.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
         menuItemClear.addActionListener((e) -> {
             contentPanel.clear();
             contentPanel.repaint();
         });
 
+        JMenuItem menuItemSearchPanel = new JMenuItem("Nach Person Suchen");
+        menuItemSearchPanel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK));
+        menuItemSearchPanel.addActionListener((e) -> search());
+
+        editMenu.add(menuItemNewPanel);
+        editMenu.add(menuItemNewRelation);
+        editMenu.addSeparator();
+        editMenu.add(menuItemDeletePanel);
+        editMenu.add(menuItemDeleteRelation);
+        editMenu.addSeparator();
         editMenu.add(menuItemDeleteSelected);
-        editMenu.add(menuItemSearchPanel);
         editMenu.add(menuItemClear);
+        editMenu.add(menuItemSearchPanel);
+        editMenu.addSeparator();
+        editMenu.add(menuItemNavMode);
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
@@ -135,13 +173,7 @@ public class Main {
         deleteRelationButton.addActionListener((e) -> deleteRelationDialog());
 
         JButton navModeButton = new JButton(new ImageIcon("navmode.png"));
-        navModeButton.addActionListener((e) -> {
-            BufferedImage img = contentPanel.takeSnapShot();
-            CardLayout cl = (CardLayout)cardPanel.getLayout();
-            navModePanel.init(img, contentPanel.getPointOnCanvas(), contentPanel.getPanelList(), cl);
-
-            cl.show(cardPanel, "NavMode");
-        });
+        navModeButton.addActionListener((e) -> enterNavMode());
 
         Dimension space = new Dimension(5, 5);
         taskBarPanel.add(newPanelButton);
@@ -337,6 +369,14 @@ public class Main {
         if (option == JOptionPane.OK_OPTION) {
             contentPanel.searchFor(field.getText());
         }
+    }
+
+    private void enterNavMode() {
+        BufferedImage img = contentPanel.takeSnapShot();
+        CardLayout cl = (CardLayout)cardPanel.getLayout();
+        navModePanel.init(img, contentPanel.getPointOnCanvas(), contentPanel.getPanelList(), cl);
+
+        cl.show(cardPanel, "NavMode");
     }
 
     class ContentPanelRightClickMenu extends JPopupMenu {
