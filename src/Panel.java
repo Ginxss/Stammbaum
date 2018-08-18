@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.util.LinkedList;
 
 public class Panel extends JPanel implements MouseListener, MouseMotionListener {
     private Point thisPos;
@@ -14,7 +15,7 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
     private JLabel text;
     private static Font font = new Font("Tahoma", Font.PLAIN, 12);
 
-    private ChildParentGroup group;
+    private LinkedList<ChildParentGroup> groups;
 
     public Panel(String name, int x, int y) {
         setBackground(Color.decode("#efd667"));
@@ -30,7 +31,7 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
         text = new JLabel(name);
         text.setFont(font);
 
-        group = null;
+        groups = new LinkedList<>();
 
         FontMetrics fm = text.getFontMetrics(font);
         int width = fm.stringWidth(name);
@@ -65,8 +66,21 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
         return selected;
     }
 
-    public void setGroup(ChildParentGroup group) {
-        this.group = group;
+    public void addGroup(ChildParentGroup group) {
+        groups.add(group);
+    }
+
+    public void clearGroups() {
+        groups.clear();
+    }
+
+    public void updateGroups() {
+        for (ChildParentGroup group : groups)
+            group.update();
+    }
+
+    public LinkedList<ChildParentGroup> getGroups() {
+        return groups;
     }
 
     @Override
@@ -145,7 +159,7 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
 
             setLocation(thisPos.x + diffX, thisPos.y + diffY);
 
-            group.update();
+            updateGroups();
 
             getParent().repaint();
         }

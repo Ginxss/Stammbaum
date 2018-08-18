@@ -90,15 +90,10 @@ public class Content {
     }
 
     public void updateSelectedPanels() {
-        for (int i = selectedPanels.size() - 1; i >= 0; i--) {
-            int pos = selectedPanels.get(i);
-            if (!panelList.get(pos).isSelected())
-                selectedPanels.remove(pos);
-        }
-
+        selectedPanels.clear();
         for (int i = 0; i < panelList.size(); i++) {
             Panel panel = panelList.get(i);
-            if (panel.isSelected() && !selectedPanels.contains(i))
+            if (panel.isSelected())
                 selectedPanels.add(i);
         }
     }

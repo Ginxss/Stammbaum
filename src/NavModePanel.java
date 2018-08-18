@@ -16,6 +16,7 @@ public class NavModePanel extends JPanel implements MouseListener, MouseMotionLi
     private Point beginPoint;
     private LinkedList<Panel> panelList;
     private CardLayout cl;
+    private LinkedList<ChildParentGroup> groups;
 
     public NavModePanel() {
         addMouseListener(this);
@@ -26,12 +27,13 @@ public class NavModePanel extends JPanel implements MouseListener, MouseMotionLi
         mousePos = new Point();
     }
 
-    public void init(BufferedImage img, Point middle, LinkedList<Panel> panelList, CardLayout cl) {
+    public void init(BufferedImage img, Point middle, LinkedList<Panel> panelList, LinkedList<ChildParentGroup> groups, CardLayout cl) {
         contentImg = img;
         ratio = (double)img.getHeight() / img.getWidth();
         beginPoint = new Point(middle.x, middle.y);
         this.panelList = panelList;
         this.cl = cl;
+        this.groups = groups;
     }
 
     @Override
@@ -98,6 +100,9 @@ public class NavModePanel extends JPanel implements MouseListener, MouseMotionLi
 
         for (Panel panel : panelList)
             panel.setLocation(panel.getX() + diffX, panel.getY() + diffY);
+
+        for (ChildParentGroup group : groups)
+            group.update();
 
         cl.show(getParent(), "Content");
     }

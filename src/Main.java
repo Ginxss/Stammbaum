@@ -7,8 +7,6 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 
 // TODO: Automatisches Sortieren
-// Je mehr auf dem BILDSCHIRM ist, desto laggier, egal wieviel auf dem Panel ist!
-// Lösung: ChildParentGroups speichern und nicht jeden Frame neu ausrechnen!
 public class Main {
     private JFrame frame;
     private JPanel backgroundPanel;
@@ -135,8 +133,16 @@ public class Main {
         editMenu.add(menuItemSearchPanel);
         editMenu.add(menuItemNavMode);
 
+        JMenu viewMenu = new JMenu("Anzeige");
+
+        JCheckBoxMenuItem checkboxAntialiasing = new JCheckBoxMenuItem("Glatte Linien");
+        checkboxAntialiasing.addActionListener((e) -> contentPanel.toggleAntialiasing());
+
+        viewMenu.add(checkboxAntialiasing);
+
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
+        menuBar.add(viewMenu);
 
         frame.setJMenuBar(menuBar);
     }
@@ -376,7 +382,7 @@ public class Main {
     private void enterNavMode() {
         BufferedImage img = contentPanel.takeSnapShot();
         CardLayout cl = (CardLayout)cardPanel.getLayout();
-        navModePanel.init(img, contentPanel.getPointOnCanvas(), contentPanel.getPanelList(), cl);
+        navModePanel.init(img, contentPanel.getPointOnCanvas(), contentPanel.getPanelList(), contentPanel.getChildParentGroups(), cl);
 
         cl.show(cardPanel, "NavMode");
     }

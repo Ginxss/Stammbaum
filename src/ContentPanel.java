@@ -22,6 +22,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     public static boolean creatingRelation = false;
 
     private boolean drawBorder;
+    private boolean antialiasing;
 
     public ContentPanel() {
         super(null);
@@ -44,6 +45,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         createRelationTarget = new Point();
 
         drawBorder = false;
+        antialiasing = false;
     }
 
     public LinkedList<Panel> getPanelList() {
@@ -64,6 +66,10 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
     public Panel getPanel(String name) {
         return content.getPanel(name);
+    }
+
+    public LinkedList<ChildParentGroup> getChildParentGroups() {
+        return groups;
     }
 
     public Panel newPanel(String name, int x, int y) {
@@ -144,6 +150,9 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         for (Panel panel : content.getPanelList())
             panel.setLocation(panel.getX() - minX, panel.getY() - minY);
 
+        for (ChildParentGroup group : groups)
+            group.update();
+
         int orgWidth = getWidth();
         int orgHeight = getHeight();
         int maxWidth = orgWidth;
@@ -162,6 +171,9 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
         for (int i = 0; i < content.getPanelList().size(); i++)
             content.getPanel(i).setLocation(orgPos.get(i));
+
+        for (ChildParentGroup group : groups)
+            group.update();
 
         setSize(orgWidth, orgHeight);
 
@@ -183,7 +195,6 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         return new Point(x, y);
     }
 
-    // evtl. performanter machen?
     private void updateChildParentGroups() {
         groups.clear();
 
@@ -217,11 +228,25 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
                 if (group.hasSameParents(group1)) {
                     group.mergeChildren(group1);
-                    groups.remove(j);
-                    j--;
+                    groups.remove(j--);
                 }
             }
         }
+
+        for (Panel panel : content.getPanelList())
+            panel.clearGroups();
+
+        for (ChildParentGroup group : groups) {
+            for (Panel panel : group.getChildren())
+                panel.addGroup(group);
+            for (Panel panel : group.getParents())
+                panel.addGroup(group);
+        }
+    }
+
+    public void toggleAntialiasing() {
+        antialiasing = !antialiasing;
+        repaint();
     }
 
     @Override
@@ -229,7 +254,9 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D)g;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        Object ant = (antialiasing) ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, ant);
 
         drawRelations(g2);
 
@@ -243,7 +270,6 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         }
     }
 
-    // performanter machen. Ist potentiell immer noch ein Problem...
     private void drawRelations(Graphics2D g2) {
         for (ChildParentGroup group : groups) {
             g2.setColor(Color.blue);
@@ -324,7 +350,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 if (e.getSource() instanceof Panel) {
                     Panel targetPanel = (Panel)e.getSource();
                     if (createRelationSrcPanel != targetPanel)
-                        content.newRelation(createRelationSrcPanel, targetPanel, Relation.Type.CHILD);
+                        newRelation(createRelationSrcPanel, targetPanel, Relation.Type.CHILD);
                 }
                 repaint();
             }
@@ -354,6 +380,9 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             }
 
             content.updateSelectedPanels();
+
+            for (ChildParentGroup group : groups)
+                group.setOrgPositions();
         }
         else if (SwingUtilities.isLeftMouseButton(e)) {
             if (!creatingRelation) {
@@ -392,27 +421,36 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        // TODO: Hier nur zu Point-Lists der Groups diffX und diffY dazurechnen.
         if (SwingUtilities.isMiddleMouseButton(e)) {
             int diffX = e.getXOnScreen() - initialMousePos.x;
             int diffY = e.getYOnScreen() - initialMousePos.y;
 
-            // Schöner machen
             if (content.getSelectedPanels().isEmpty()) {
                 for (int i = 0; i < content.getPanelList().size(); i++) {
                     Point panelPos = panelPositions.get(i);
                     content.getPanel(i).setLocation(panelPos.x + diffX, panelPos.y + diffY);
                 }
+
+                for (ChildParentGroup group : groups)
+                    group.applyDiff(diffX, diffY);
             }
             else {
+                LinkedList<ChildParentGroup> groupsToUpdate = new LinkedList<>();
+
                 for (int i : content.getSelectedPanels()) {
                     Point panelPos = panelPositions.get(i);
-                    content.getPanel(i).setLocation(panelPos.x + diffX, panelPos.y + diffY);
-                }
-            }
+                    Panel panel = content.getPanel(i);
+                    panel.setLocation(panelPos.x + diffX, panelPos.y + diffY);
 
-            for (ChildParentGroup group : groups)
-                group.update();
+                    for (ChildParentGroup group : panel.getGroups()) {
+                        if (!groupsToUpdate.contains(group))
+                            groupsToUpdate.add(group);
+                    }
+                }
+
+                for (ChildParentGroup group : groupsToUpdate)
+                    group.update();
+            }
         }
         else if (SwingUtilities.isLeftMouseButton(e)) {
             if (!creatingRelation) {

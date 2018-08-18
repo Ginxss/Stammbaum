@@ -6,20 +6,20 @@ public class ChildParentGroup {
     private Collection<Panel> children;
     private Collection<Panel> parents;
 
-    // TODO: Hiermit performanter machen?
     private LinkedList<Point> childNodes;
     private LinkedList<Point> parentNodes;
     private Point childMiddle;
     private Point parentMiddle;
 
+    private LinkedList<Point> orgChildNodes;
+    private LinkedList<Point> orgParentNodes;
+    private Point orgChildMiddle;
+    private Point orgParentMiddle;
+
     public ChildParentGroup(Panel child, Collection<Panel> parents) {
         this.children = new LinkedList<>();
         children.add(child);
         this.parents = parents;
-
-        for (Panel panel : parents)
-            panel.setGroup(this);
-        child.setGroup(this);
 
         childNodes = new LinkedList<>();
         int childX = child.getX() + child.getWidth() / 2;
@@ -30,6 +30,11 @@ public class ChildParentGroup {
         parentNodes = new LinkedList<>();
         parentMiddle = new Point();
         updateParentNodes();
+
+        orgChildNodes = new LinkedList<>();
+        orgParentNodes = new LinkedList<>();
+        orgChildMiddle = new Point();
+        orgParentMiddle = new Point();
     }
 
     public Collection<Panel> getChildren() {
@@ -69,7 +74,6 @@ public class ChildParentGroup {
         for (Panel child : other.getChildren()) {
             if (!children.contains(child)) {
                 children.add(child);
-                child.setGroup(this);
             }
         }
 
@@ -119,25 +123,39 @@ public class ChildParentGroup {
             i++;
         }
         parentMiddle.x /= i;
-        //parentMiddle.y += (childMiddle.y - parentMiddle.y) / 5;
+        parentMiddle.y += (childMiddle.y - parentMiddle.y) / 5;
+    }
+
+
+    public void setOrgPositions() {
+        orgChildNodes.clear();
+        for (int i = 0; i < childNodes.size(); i++)
+            orgChildNodes.add(new Point(childNodes.get(i).x, childNodes.get(i).y));
+
+        orgParentNodes.clear();
+        for (int i = 0; i < parentNodes.size(); i++)
+            orgParentNodes.add(new Point(parentNodes.get(i).x, parentNodes.get(i).y));
+
+        orgChildMiddle = new Point(childMiddle);
+        orgParentMiddle = new Point(parentMiddle);
     }
 
     public void applyDiff(int diffX, int diffY) {
-        /*for (Point point : childNodes) {
-            point.x += diffX;
-            point.y += diffY;
+        for (int i = 0; i < childNodes.size(); i++) {
+            Point orgPos = orgChildNodes.get(i);
+            childNodes.get(i).setLocation(orgPos.x + diffX, orgPos.y  + diffY);
         }
 
-        for (Point point : parentNodes) {
-            point.x += diffX;
-            point.y += diffY;
-        }*/
+        for (int i = 0; i < parentNodes.size(); i++) {
+            Point orgPos = orgParentNodes.get(i);
+            parentNodes.get(i).setLocation(orgPos.x + diffX, orgPos.y + diffY);
+        }
 
-        childMiddle.x += diffX;
-        childMiddle.y += diffY;
+        childMiddle.x = orgChildMiddle.x + diffX;
+        childMiddle.y = orgChildMiddle.y + diffY;
 
-        parentMiddle.x += diffX;
-        parentMiddle.y += diffY;
+        parentMiddle.x = orgParentMiddle.x + diffX;
+        parentMiddle.y = orgParentMiddle.y + diffY;
     }
 
     @Override
