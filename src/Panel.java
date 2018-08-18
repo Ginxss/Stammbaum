@@ -14,6 +14,8 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
     private JLabel text;
     private static Font font = new Font("Tahoma", Font.PLAIN, 12);
 
+    private ChildParentGroup group;
+
     public Panel(String name, int x, int y) {
         setBackground(Color.decode("#efd667"));
         addMouseListener(this);
@@ -27,6 +29,8 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
 
         text = new JLabel(name);
         text.setFont(font);
+
+        group = null;
 
         FontMetrics fm = text.getFontMetrics(font);
         int width = fm.stringWidth(name);
@@ -59,6 +63,10 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
 
     public boolean isSelected() {
         return selected;
+    }
+
+    public void setGroup(ChildParentGroup group) {
+        this.group = group;
     }
 
     @Override
@@ -136,6 +144,8 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
             int diffY = e.getYOnScreen() - mousePos.y;
 
             setLocation(thisPos.x + diffX, thisPos.y + diffY);
+
+            group.update();
 
             getParent().repaint();
         }

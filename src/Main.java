@@ -8,6 +8,7 @@ import java.io.*;
 
 // TODO: Automatisches Sortieren
 // Je mehr auf dem BILDSCHIRM ist, desto laggier, egal wieviel auf dem Panel ist!
+// Lösung: ChildParentGroups speichern und nicht jeden Frame neu ausrechnen!
 public class Main {
     private JFrame frame;
     private JPanel backgroundPanel;
@@ -95,10 +96,6 @@ public class Main {
         menuItemDeleteRelation.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
         menuItemDeleteRelation.addActionListener((e) -> deleteRelationDialog());
 
-        JMenuItem menuItemNavMode = new JMenuItem("Navigationsmodus");
-        menuItemNavMode.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, KeyEvent.CTRL_DOWN_MASK));
-        menuItemNavMode.addActionListener((e) -> enterNavMode());
-
         JMenuItem menuItemDeleteSelected = new JMenuItem("Auswahl löschen");
         menuItemDeleteSelected.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK));
         menuItemDeleteSelected.addActionListener((e) -> {
@@ -120,7 +117,11 @@ public class Main {
 
         JMenuItem menuItemSearchPanel = new JMenuItem("Nach Person Suchen");
         menuItemSearchPanel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK));
-        menuItemSearchPanel.addActionListener((e) -> search());
+        menuItemSearchPanel.addActionListener((e) -> searchDialog());
+
+        JMenuItem menuItemNavMode = new JMenuItem("Navigationsmodus");
+        menuItemNavMode.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
+        menuItemNavMode.addActionListener((e) -> enterNavMode());
 
         editMenu.add(menuItemNewPanel);
         editMenu.add(menuItemNewRelation);
@@ -130,8 +131,8 @@ public class Main {
         editMenu.addSeparator();
         editMenu.add(menuItemDeleteSelected);
         editMenu.add(menuItemClear);
-        editMenu.add(menuItemSearchPanel);
         editMenu.addSeparator();
+        editMenu.add(menuItemSearchPanel);
         editMenu.add(menuItemNavMode);
 
         menuBar.add(fileMenu);
@@ -359,7 +360,7 @@ public class Main {
         }
     }
 
-    private void search() {
+    private void searchDialog() {
         JTextField field = new JTextField();
         field.addAncestorListener(new RequestFocusListener());
 
@@ -368,6 +369,7 @@ public class Main {
         int option = JOptionPane.showConfirmDialog(frame, inputs, "Suchen", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
             contentPanel.searchFor(field.getText());
+            contentPanel.repaint();
         }
     }
 

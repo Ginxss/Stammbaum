@@ -8,6 +8,8 @@ import java.util.LinkedList;
 public class ContentPanel extends JPanel implements MouseListener, MouseMotionListener, MouseWheelListener {
     private Content content;
 
+    private LinkedList<ChildParentGroup> groups;
+
     private Point initialMousePos;
     private LinkedList<Point> panelPositions;
 
@@ -29,6 +31,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         addMouseWheelListener(this);
 
         content = new Content();
+
+        groups = new LinkedList<>();
 
         initialMousePos = new Point();
         panelPositions = new LinkedList<>();
@@ -72,21 +76,29 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     }
 
     public Relation newRelation(Panel srcPanel, Panel targetPanel, Relation.Type type) {
-        return content.newRelation(srcPanel, targetPanel, type);
+        Relation relation = content.newRelation(srcPanel, targetPanel, type);
+        updateChildParentGroups();
+        return relation;
     }
 
     public boolean deletePanel(int i) {
         remove(content.getPanel(i));
-        return content.deletePanel(i);
+        boolean result = content.deletePanel(i);
+        updateChildParentGroups();
+        return result;
     }
 
     public boolean deletePanel(String name) {
         remove(content.getPanel(name));
-        return content.deletePanel(name);
+        boolean result = content.deletePanel(name);
+        updateChildParentGroups();
+        return result;
     }
 
     public boolean deleteRelation(String srcName, String targetName, Relation.Type type) {
-        return content.deleteRelation(srcName, targetName, type);
+        boolean result = content.deleteRelation(srcName, targetName, type);
+        updateChildParentGroups();
+        return result;
     }
 
     public void updateSelectedPanels() {
@@ -97,6 +109,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         for (Panel panel : content.getPanelList())
             remove(panel);
         content.clear();
+        updateChildParentGroups();
     }
 
     public void searchFor(String name) {
@@ -170,29 +183,11 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         return new Point(x, y);
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
+    // evtl. performanter machen?
+    private void updateChildParentGroups() {
+        groups.clear();
 
-        Graphics2D g2 = (Graphics2D)g;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        drawRelations(g2);
-
-        drawSelectionRectangle(g2);
-
-        drawCreatingRelation(g2);
-
-        if (drawBorder) {
-            g2.setColor(Color.black);
-            g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
-        }
-    }
-
-    // Performanter machen. Hier wird es laggy bei vielen Relations.
-    private void drawRelations(Graphics2D g2) {
         LinkedList<Relation> usedChildRelations = new LinkedList<>();
-        LinkedList<ChildParentGroup> groups = new LinkedList<>();
 
         for (Relation relation : content.getRelationList().getChildRelations()) {
             if (!usedChildRelations.contains(relation)) {
@@ -227,51 +222,35 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 }
             }
         }
+    }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        Graphics2D g2 = (Graphics2D)g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        drawRelations(g2);
+
+        drawSelectionRectangle(g2);
+
+        drawCreatingRelation(g2);
+
+        if (drawBorder) {
+            g2.setColor(Color.black);
+            g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+        }
+    }
+
+    // performanter machen. Ist potentiell immer noch ein Problem...
+    private void drawRelations(Graphics2D g2) {
         for (ChildParentGroup group : groups) {
-            LinkedList<Point> childNodes = new LinkedList<>();
-            for (Panel panel : group.getChildren()) {
-                int childX = panel.getX() + panel.getWidth() / 2;
-                int childY = panel.getY();
-                childNodes.add(new Point(childX, childY));
-            }
-
-            Point childMiddle = new Point();
-            childMiddle.y = Integer.MAX_VALUE;
-            int j = 0;
-            for (Point point : childNodes) {
-                if (point.y < childMiddle.y)
-                    childMiddle.y = point.y;
-                childMiddle.x += point.x;
-                j++;
-            }
-            childMiddle.x /= j;
-            childMiddle.y -= 0;
-
-            LinkedList<Point> parentNodes = new LinkedList<>();
-            for (Panel panel : group.getParents()) {
-                int parentX = panel.getX() + panel.getWidth() / 2;
-                int parentY = panel.getY() + panel.getHeight();
-                parentNodes.add(new Point(parentX, parentY - 1));
-            }
-
-            Point parentMiddle = new Point();
-            parentMiddle.y = Integer.MIN_VALUE;
-            int i = 0;
-            for (Point point : parentNodes) {
-                if (point.y > parentMiddle.y)
-                    parentMiddle.y = point.y;
-                parentMiddle.x += point.x;
-                i++;
-            }
-            parentMiddle.x /= i;
-            parentMiddle.y += (childMiddle.y - parentMiddle.y) / 5;
-
             g2.setColor(Color.blue);
-            for (Point point : parentNodes)
-                g2.drawLine(point.x, point.y, parentMiddle.x, parentMiddle.y);
+            for (Point point : group.getParentNodes())
+                g2.drawLine(point.x, point.y, group.getParentMiddle().x, group.getParentMiddle().y);
 
-            if (parentMiddle.y > childMiddle.y) {
+            if (group.getParentMiddle().y > group.getChildMiddle().y) {
                 g2.setColor(Color.red);
                 g2.setStroke(new BasicStroke(2));
             }
@@ -280,12 +259,12 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 g2.setStroke(new BasicStroke(1));
             }
 
-            g2.drawLine(parentMiddle.x, parentMiddle.y, childMiddle.x, childMiddle.y);
+            g2.drawLine(group.getParentMiddle().x, group.getParentMiddle().y, group.getChildMiddle().x, group.getChildMiddle().y);
 
             g2.setColor(Color.black);
             g2.setStroke(new BasicStroke(1));
-            for (Point point : childNodes)
-                g2.drawLine(point.x, point.y, childMiddle.x, childMiddle.y);
+            for (Point point : group.getChildNodes())
+                g2.drawLine(point.x, point.y, group.getChildMiddle().x, group.getChildMiddle().y);
         }
     }
 
@@ -413,10 +392,12 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
     @Override
     public void mouseDragged(MouseEvent e) {
+        // TODO: Hier nur zu Point-Lists der Groups diffX und diffY dazurechnen.
         if (SwingUtilities.isMiddleMouseButton(e)) {
             int diffX = e.getXOnScreen() - initialMousePos.x;
             int diffY = e.getYOnScreen() - initialMousePos.y;
 
+            // Schöner machen
             if (content.getSelectedPanels().isEmpty()) {
                 for (int i = 0; i < content.getPanelList().size(); i++) {
                     Point panelPos = panelPositions.get(i);
@@ -429,6 +410,9 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                     content.getPanel(i).setLocation(panelPos.x + diffX, panelPos.y + diffY);
                 }
             }
+
+            for (ChildParentGroup group : groups)
+                group.update();
         }
         else if (SwingUtilities.isLeftMouseButton(e)) {
             if (!creatingRelation) {
