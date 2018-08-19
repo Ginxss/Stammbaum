@@ -133,6 +133,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
     public BufferedImage takeSnapShot() {
         drawBorder = false;
+        boolean orgAntialiasing = antialiasing;
+        antialiasing = true;
 
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
@@ -168,6 +170,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         BufferedImage img = new BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_RGB);
 
         paint(img.createGraphics());
+
+        antialiasing = orgAntialiasing;
 
         for (int i = 0; i < content.getPanelList().size(); i++)
             content.getPanel(i).setLocation(orgPos.get(i));

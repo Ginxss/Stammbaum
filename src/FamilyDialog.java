@@ -31,7 +31,7 @@ public class FamilyDialog extends JDialog {
                 Graphics2D g2 = (Graphics2D)g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                resizeLabels(familyTree.root, 0, backgroundPanel.getWidth(), 1);
+                resizeLabels(familyTree.root, 0, backgroundPanel.getWidth(), 0);
                 drawLines(familyTree.root, g2);
             }
         };
@@ -43,7 +43,7 @@ public class FamilyDialog extends JDialog {
         familyTree = new FamilyTree(newLabel);
         fillTree(familyTree.root, relationList);
 
-        addLabels(familyTree.root, 0, backgroundPanel.getWidth(), 1);
+        addLabels(familyTree.root, 0, backgroundPanel.getWidth(), 0);
     }
 
     private void fillTree(Node startNode, RelationList relationList) {
@@ -76,7 +76,7 @@ public class FamilyDialog extends JDialog {
         int y = 0;
         switch (type) {
             case ANCESTOR:
-                y = backgroundPanel.getHeight() - (heightLevel * height * 3);
+                y = backgroundPanel.getHeight() - (heightLevel * height * 3 + startNode.data.getHeight());
                 break;
             case DESCENDANTS:
                 y = (heightLevel * height * 3);
@@ -99,7 +99,7 @@ public class FamilyDialog extends JDialog {
         int y = 0;
         switch (type) {
             case ANCESTOR:
-                y = backgroundPanel.getHeight() - (heightLevel * height * 3);
+                y = backgroundPanel.getHeight() - (heightLevel * height * 3 + startNode.data.getHeight());
                 break;
             case DESCENDANTS:
                 y = (heightLevel * height * 3);

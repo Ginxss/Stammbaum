@@ -42,7 +42,6 @@ public class NavModePanel extends JPanel implements MouseListener, MouseMotionLi
 
         Graphics2D g2 = (Graphics2D)g;
 
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
         int panelWidth = getWidth();
