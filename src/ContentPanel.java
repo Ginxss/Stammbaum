@@ -72,6 +72,10 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         return groups;
     }
 
+    public boolean getAntilasing() {
+        return antialiasing;
+    }
+
     public Panel newPanel(String name, int x, int y) {
         Panel panel = content.newPanel(name, x, y);
         if (panel != null) {

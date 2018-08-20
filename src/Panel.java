@@ -13,12 +13,15 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
     private boolean selected;
 
     private JLabel text;
-    private static Font font = new Font("Tahoma", Font.PLAIN, 12);
 
     private LinkedList<ChildParentGroup> groups;
 
+    private static Font font = new Font("Tahoma", Font.PLAIN, 12);
+    private static Color fontColor = Color.black;
+    private static Color color = Color.decode("#efd667");
+
     public Panel(String name, int x, int y) {
-        setBackground(Color.decode("#efd667"));
+        setBackground(color);
         addMouseListener(this);
         addMouseMotionListener(this);
 
@@ -30,6 +33,7 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
 
         text = new JLabel(name);
         text.setFont(font);
+        text.setForeground(fontColor);
 
         groups = new LinkedList<>();
 
@@ -39,6 +43,29 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
         setBounds(x, y, width + 10, height + 10);
 
         add(text);
+    }
+
+    public static Color getColor() {
+        return color;
+    }
+
+    public static void setColor(Color c) {
+        color = c;
+
+        int r = color.getRed();
+        int g = color.getGreen();
+        int b = color.getBlue();
+        int brightness = (int)Math.sqrt(r*r * .241 + g*g * .691 + b*b * .068);
+
+        if (brightness < 100)
+            fontColor = Color.white;
+        else
+            fontColor = Color.black;
+    }
+
+    public void updateColor() {
+        setBackground(color);
+        text.setForeground(fontColor);
     }
 
     public String getName() {

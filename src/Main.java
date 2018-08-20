@@ -16,6 +16,7 @@ public class Main {
     private NavModePanel navModePanel;
 
     private JPanel taskBarPanel;
+    private JCheckBoxMenuItem checkboxAntialiasing;
 
     public static void main(String[] args) {
         new Main();
@@ -38,6 +39,8 @@ public class Main {
         contentPanel.newRelation(contentPanel.getPanel("Kind 1"), contentPanel.getPanel("Mutter"), Relation.Type.CHILD);
         contentPanel.newRelation(contentPanel.getPanel("Kind 2"), contentPanel.getPanel("Vater"), Relation.Type.CHILD);
         contentPanel.newRelation(contentPanel.getPanel("Kind 2"), contentPanel.getPanel("Mutter"), Relation.Type.CHILD);
+
+        loadSettings();
 
         frame.repaint();
         frame.revalidate();
@@ -135,10 +138,22 @@ public class Main {
 
         JMenu viewMenu = new JMenu("Anzeige");
 
-        JCheckBoxMenuItem checkboxAntialiasing = new JCheckBoxMenuItem("Glatte Linien");
-        checkboxAntialiasing.addActionListener((e) -> contentPanel.toggleAntialiasing());
+        checkboxAntialiasing = new JCheckBoxMenuItem("Glatte Linien");
+        checkboxAntialiasing.addActionListener((e) -> {
+            contentPanel.toggleAntialiasing();
+            storeSettings();
+        });
+
+        JMenuItem menuItemColor = new JMenuItem("Farbe");
+        menuItemColor.addActionListener((e) -> {
+            Panel.setColor(JColorChooser.showDialog(frame, "Farbe auswählen", Panel.getColor()));
+            for (Panel panel : contentPanel.getPanelList())
+                panel.updateColor();
+            storeSettings();
+        });
 
         viewMenu.add(checkboxAntialiasing);
+        viewMenu.add(menuItemColor);
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
@@ -201,6 +216,48 @@ public class Main {
         backgroundPanel.add(taskBarPanel, BorderLayout.NORTH);
         frame.getContentPane().add(backgroundPanel);
         frame.setVisible(true);
+    }
+
+    private void loadSettings() {
+        File file = new File("config.txt");
+        if (file.exists()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line;
+
+                if ((line = br.readLine()) != null) {
+                    String antialiasingValue = line.split(":")[1];
+                    if (antialiasingValue.equals("true"))
+                        checkboxAntialiasing.doClick();
+                }
+
+                if ((line = br.readLine()) != null) {
+                    String colorValue = line.split(":")[1];
+                    Panel.setColor(Color.decode(colorValue));
+                    for (Panel panel : contentPanel.getPanelList())
+                        panel.updateColor();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void storeSettings() {
+        try (FileWriter fw = new FileWriter("config.txt")) {
+            String s = "Antialiasing:" + String.valueOf(contentPanel.getAntilasing()) + System.lineSeparator();
+            s += "Color:" + toHexString(Panel.getColor()) + System.lineSeparator();
+
+            fw.write(s);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String toHexString(Color color) {
+        String hexColor = Integer.toHexString(color.getRGB() & 0xffffff);
+        if (hexColor.length() < 6)
+            hexColor = "000000".substring(0, 6 - hexColor.length()) + hexColor;
+        return "#" + hexColor;
     }
 
     private Panel newPanelDialog() {
