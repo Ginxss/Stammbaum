@@ -1,2 +1,2 @@
 Antialiasing:false
-Color:#ebdb90
+Color:#33ccff

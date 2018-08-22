@@ -112,7 +112,7 @@ public class ChildParentGroup {
         int i = 0;
         for (Panel panel : parents) {
             int parentX = panel.getX() + panel.getWidth() / 2;
-            int parentY = panel.getY() + panel.getHeight();
+            int parentY = panel.getY() + panel.getHeight() - 1;
             parentNodes.add(new Point(parentX, parentY));
 
             parentMiddle.x += parentX;
@@ -123,7 +123,8 @@ public class ChildParentGroup {
             i++;
         }
         parentMiddle.x /= i;
-        parentMiddle.y += (childMiddle.y - parentMiddle.y) / 5;
+        //if (parents.size() > 1)
+            //parentMiddle.y += (childMiddle.y - parentMiddle.y) / 10;
     }
 
 

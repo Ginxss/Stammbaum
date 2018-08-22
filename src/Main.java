@@ -67,6 +67,8 @@ public class Main {
         JMenuBar menuBar = new JMenuBar();
 
         JMenu fileMenu = new JMenu("Datei");
+        JMenu editMenu = new JMenu("Bearbeiten");
+        JMenu viewMenu = new JMenu("Anzeige");
 
         JMenuItem menuItemSave = new JMenuItem("Speichern");
         menuItemSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
@@ -78,8 +80,6 @@ public class Main {
 
         fileMenu.add(menuItemSave);
         fileMenu.add(menuItemOpen);
-
-        JMenu editMenu = new JMenu("Bearbeiten");
 
         JMenuItem menuItemNewPanel = new JMenuItem("Neue Person");
         menuItemNewPanel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
@@ -135,8 +135,6 @@ public class Main {
         editMenu.addSeparator();
         editMenu.add(menuItemSearchPanel);
         editMenu.add(menuItemNavMode);
-
-        JMenu viewMenu = new JMenu("Anzeige");
 
         checkboxAntialiasing = new JCheckBoxMenuItem("Glatte Linien");
         checkboxAntialiasing.addActionListener((e) -> {

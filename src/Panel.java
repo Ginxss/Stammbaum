@@ -57,7 +57,7 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
         int b = color.getBlue();
         int brightness = (int)Math.sqrt(r*r * .241 + g*g * .691 + b*b * .068);
 
-        if (brightness < 100)
+        if (brightness < 120)
             fontColor = Color.white;
         else
             fontColor = Color.black;

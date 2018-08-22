@@ -280,7 +280,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
     private void drawRelations(Graphics2D g2) {
         for (ChildParentGroup group : groups) {
-            g2.setColor(Color.blue);
+            g2.setColor(Color.green.darker());
             for (Point point : group.getParentNodes())
                 g2.drawLine(point.x, point.y, group.getParentMiddle().x, group.getParentMiddle().y);
 
@@ -289,7 +289,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 g2.setStroke(new BasicStroke(2));
             }
             else {
-                g2.setColor(Color.blue);
+                g2.setColor(Color.blue.brighter());
                 g2.setStroke(new BasicStroke(1));
             }
 
@@ -332,7 +332,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
             g2.setColor(Color.black);
             g2.drawRect(drawX, drawY, drawW, drawH);
-            g2.setColor(new Color(50, 50, 50, 50));
+            g2.setColor(new Color(Panel.getColor().getRed(), Panel.getColor().getGreen(), Panel.getColor().getBlue(), 50));
             g2.fillRect(drawX, drawY, drawW, drawH);
         }
     }
