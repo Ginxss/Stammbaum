@@ -46,32 +46,32 @@ public class FamilyDialog extends JDialog {
         addLabels(familyTree.root, 0, backgroundPanel.getWidth(), 0);
     }
 
-    private void fillTree(Node startNode, RelationList relationList) {
+    private void fillTree(TreeNode startNode, RelationList relationList) {
         for (Relation relation : relationList.getChildRelations()) {
             switch (type) {
                 case ANCESTOR:
                     if (relation.srcPanel.getName().equals(startNode.data.getText())) {
                         JLabel newLabel = new JLabel(relation.targetPanel.getName());
                         newLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
-                        startNode.next.add(new Node(newLabel));
+                        startNode.next.add(new TreeNode(newLabel));
                     }
                     break;
                 case DESCENDANTS:
                     if (relation.targetPanel.getName().equals(startNode.data.getText())) {
                         JLabel newLabel = new JLabel(relation.srcPanel.getName());
                         newLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
-                        startNode.next.add(new Node(newLabel));
+                        startNode.next.add(new TreeNode(newLabel));
                     }
             }
 
 
         }
 
-        for (Node node : startNode.next)
+        for (TreeNode node : startNode.next)
             fillTree(node, relationList);
     }
 
-    private void addLabels(Node startNode, int startX, int width, int heightLevel) {
+    private void addLabels(TreeNode startNode, int startX, int width, int heightLevel) {
         int height = 20;
         int y = 0;
         switch (type) {
@@ -88,13 +88,13 @@ public class FamilyDialog extends JDialog {
         backgroundPanel.add(startNode.data);
 
         for (int i = 0; i < startNode.next.size(); i++) {
-            Node node = startNode.next.get(i);
+            TreeNode node = startNode.next.get(i);
             int areaWidth = width / startNode.next.size();
             addLabels(node, startX + i * areaWidth, areaWidth, heightLevel + 1);
         }
     }
 
-    private void resizeLabels(Node startNode, int startX, int width, int heightLevel) {
+    private void resizeLabels(TreeNode startNode, int startX, int width, int heightLevel) {
         int height = 20;
         int y = 0;
         switch (type) {
@@ -107,14 +107,14 @@ public class FamilyDialog extends JDialog {
         startNode.data.setBounds(startX, y, width, height);
 
         for (int i = 0; i < startNode.next.size(); i++) {
-            Node node = startNode.next.get(i);
+            TreeNode node = startNode.next.get(i);
             int areaWidth = width / startNode.next.size();
             resizeLabels(node, startX + i * areaWidth, areaWidth, heightLevel + 1);
         }
     }
 
-    private void drawLines(Node startNode, Graphics2D g2) {
-        for (Node node : startNode.next) {
+    private void drawLines(TreeNode startNode, Graphics2D g2) {
+        for (TreeNode node : startNode.next) {
             int myX = startNode.data.getX() + startNode.data.getWidth() / 2;
             int myY = 0;
             int nextX = node.data.getX() + node.data.getWidth() / 2;

@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 
 // TODO: Automatisches Sortieren
+// TODO: Undo / Redo ...
 public class Main {
     private JFrame frame;
     private JPanel backgroundPanel;
@@ -14,6 +15,8 @@ public class Main {
     private JPanel cardPanel;
     private ContentPanel contentPanel;
     private NavModePanel navModePanel;
+
+    private ActionStack actionStack;
 
     private JPanel taskBarPanel;
     private JCheckBoxMenuItem checkboxAntialiasing;
@@ -55,6 +58,8 @@ public class Main {
 
         navModePanel = new NavModePanel();
 
+        actionStack = new ActionStack(contentPanel);
+
         openFile = null;
     }
 
@@ -76,9 +81,17 @@ public class Main {
         fileMenu.add(menuItemSave);
         fileMenu.add(menuItemOpen);
 
+        JMenuItem menuItemUndo = new JMenuItem("Rückgängig");
+        menuItemUndo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK));
+        menuItemUndo.addActionListener((e) -> actionStack.undo());
+
+        JMenuItem menuItemRedo = new JMenuItem("Wiederholen");
+        menuItemRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK));
+        menuItemRedo.addActionListener((e) -> actionStack.redo());
+
         JMenuItem menuItemNewPanel = new JMenuItem("Neue Person");
         menuItemNewPanel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
-        menuItemNewPanel.addActionListener((e) -> newPanelDialog());
+        menuItemNewPanel.addActionListener((e) -> newPanelDialog(10, 10));
 
         JMenuItem menuItemNewRelation = new JMenuItem("Neue Beziehung");
         menuItemNewRelation.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
@@ -94,22 +107,11 @@ public class Main {
 
         JMenuItem menuItemDeleteSelected = new JMenuItem("Auswahl löschen");
         menuItemDeleteSelected.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK));
-        menuItemDeleteSelected.addActionListener((e) -> {
-            contentPanel.updateSelectedPanels();
-            for (int i = contentPanel.getPanelList().size() - 1; i >= 0; i--) {
-                if (contentPanel.getSelectedPanels().contains(i))
-                    contentPanel.deletePanel(i);
-            }
-            contentPanel.repaint();
-            contentPanel.revalidate();
-        });
+        menuItemDeleteSelected.addActionListener((e) -> contentPanel.deleteSelected());
 
         JMenuItem menuItemClear = new JMenuItem("Alles löschen");
         menuItemClear.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
-        menuItemClear.addActionListener((e) -> {
-            contentPanel.clear();
-            contentPanel.repaint();
-        });
+        menuItemClear.addActionListener((e) -> contentPanel.clear());
 
         JMenuItem menuItemSearchPanel = new JMenuItem("Nach Person Suchen");
         menuItemSearchPanel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK));
@@ -119,6 +121,9 @@ public class Main {
         menuItemNavMode.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
         menuItemNavMode.addActionListener((e) -> enterNavMode());
 
+        editMenu.add(menuItemUndo);
+        editMenu.add(menuItemRedo);
+        editMenu.addSeparator();
         editMenu.add(menuItemNewPanel);
         editMenu.add(menuItemNewRelation);
         editMenu.addSeparator();
@@ -176,7 +181,7 @@ public class Main {
         taskBarPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 
         JButton newPanelButton = new JButton(new ImageIcon("newPanel.png"));
-        newPanelButton.addActionListener((e) -> newPanelDialog());
+        newPanelButton.addActionListener((e) -> newPanelDialog(10, 10));
 
         JButton newRelationButton = new JButton(new ImageIcon("newRelation.png"));
         newRelationButton.addActionListener((e) -> newRelationDialog());
@@ -259,7 +264,7 @@ public class Main {
         return "#" + hexColor;
     }
 
-    private Panel newPanelDialog() {
+    private Panel newPanelDialog(int x, int y) {
         Panel panel = null;
 
         JTextField field = new JTextField();
@@ -271,11 +276,24 @@ public class Main {
         if (option == JOptionPane.OK_OPTION) {
             String name = field.getText();
             if (!name.equals("")) {
-                panel = contentPanel.newPanel(name, 10, 10);
+                panel = newPanel(name, x, y);
+
                 contentPanel.repaint();
                 contentPanel.revalidate();
             }
         }
+
+        return panel;
+    }
+
+    private Panel newPanel(String name, int x, int y) {
+        Panel panel = contentPanel.newPanel(name, x, y);
+
+        /*ArrayList<String> objects = new ArrayList<>(1);
+        objects.add(name);
+        ArrayList<Point> positions = new ArrayList<>(1);
+        positions.add(new Point(x, y));
+        actionStack.addAction(new Action(0, objects, positions));*/
 
         return panel;
     }
@@ -295,12 +313,25 @@ public class Main {
             Panel targetPanel = contentPanel.getPanel(targetField.getText());
             if (srcPanel != null && targetPanel != null) {
                 if (relationTypes.getSelectedItem() == "ist Kind von") {
-                    contentPanel.newRelation(srcPanel, targetPanel, Relation.Type.CHILD);
+                    newRelation(srcPanel, targetPanel, Relation.Type.CHILD);
+
                     contentPanel.repaint();
                     contentPanel.revalidate();
                 }
             }
         }
+    }
+
+    private Relation newRelation(Panel srcPanel, Panel targetPanel, Relation.Type type) {
+        Relation relation = contentPanel.newRelation(srcPanel, targetPanel, type);
+
+        /*ArrayList<String> objects = new ArrayList<>(3);
+        objects.add(srcPanel.getName());
+        objects.add(targetPanel.getName());
+        objects.add(("CHILD"));
+        actionStack.addAction(new Action(2, objects, null));*/
+
+        return relation;
     }
 
     private void deletePanelDialog() {
@@ -420,6 +451,8 @@ public class Main {
 
             openFile = file;
             storeSettings();
+
+            actionStack.clear();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -458,10 +491,7 @@ public class Main {
                 Point mouseOnScreen = MouseInfo.getPointerInfo().getLocation();
                 Point contentPanelPos = contentPanel.getLocationOnScreen();
 
-                Panel panel = newPanelDialog();
-
-                if (panel != null)
-                    panel.setLocation(mouseOnScreen.x - contentPanelPos.x, mouseOnScreen.y - contentPanelPos.y);
+                Panel panel = newPanelDialog(mouseOnScreen.x - contentPanelPos.x, mouseOnScreen.y - contentPanelPos.y);
             });
 
             newRelationItem = new JMenuItem("Neue Beziehung");

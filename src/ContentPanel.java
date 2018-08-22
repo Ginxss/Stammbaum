@@ -111,8 +111,15 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         return result;
     }
 
-    public void updateSelectedPanels() {
+    public void deleteSelected() {
         content.updateSelectedPanels();
+        for (int i = content.getSelectedPanels().size() - 1; i >= 0; i--) {
+            int pos = content.getSelectedPanels().get(i);
+            deletePanel(pos);
+        }
+
+        repaint();
+        revalidate();
     }
 
     public void clear() {
@@ -120,6 +127,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             remove(panel);
         content.clear();
         updateChildParentGroups();
+
+        repaint();
     }
 
     public void searchFor(String name) {

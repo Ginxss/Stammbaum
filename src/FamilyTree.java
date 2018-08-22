@@ -1,20 +1,20 @@
 import javax.swing.*;
 import java.util.LinkedList;
 
-class Node {
+class TreeNode {
     public JLabel data;
-    public LinkedList<Node> next;
+    public LinkedList<TreeNode> next;
 
-    public Node(JLabel label) {
+    public TreeNode(JLabel label) {
         this.data = label;
         next = new LinkedList<>();
     }
 }
 
 class FamilyTree {
-    public Node root;
+    public TreeNode root;
 
     public FamilyTree(JLabel rootLabel) {
-        root = new Node(rootLabel);
+        root = new TreeNode(rootLabel);
     }
 }
