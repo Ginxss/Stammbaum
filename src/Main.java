@@ -18,6 +18,8 @@ public class Main {
     private JPanel taskBarPanel;
     private JCheckBoxMenuItem checkboxAntialiasing;
 
+    private File openFile;
+
     public static void main(String[] args) {
         new Main();
     }
@@ -30,15 +32,6 @@ public class Main {
         createTaskBar();
 
         addComponents();
-
-        contentPanel.newPanel("Vater", 10, 10);
-        contentPanel.newPanel("Mutter", 100, 10);
-        contentPanel.newPanel("Kind 1", 10, 200);
-        contentPanel.newPanel("Kind 2", 100, 200);
-        contentPanel.newRelation(contentPanel.getPanel("Kind 1"), contentPanel.getPanel("Vater"), Relation.Type.CHILD);
-        contentPanel.newRelation(contentPanel.getPanel("Kind 1"), contentPanel.getPanel("Mutter"), Relation.Type.CHILD);
-        contentPanel.newRelation(contentPanel.getPanel("Kind 2"), contentPanel.getPanel("Vater"), Relation.Type.CHILD);
-        contentPanel.newRelation(contentPanel.getPanel("Kind 2"), contentPanel.getPanel("Mutter"), Relation.Type.CHILD);
 
         loadSettings();
 
@@ -61,6 +54,8 @@ public class Main {
         contentPanel.setComponentPopupMenu(new ContentPanelRightClickMenu());
 
         navModePanel = new NavModePanel();
+
+        openFile = null;
     }
 
     private void createMenu() {
@@ -72,11 +67,11 @@ public class Main {
 
         JMenuItem menuItemSave = new JMenuItem("Speichern");
         menuItemSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
-        menuItemSave.addActionListener((e) -> save());
+        menuItemSave.addActionListener((e) -> saveDialog());
 
         JMenuItem menuItemOpen = new JMenuItem("Öffnen");
         menuItemOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
-        menuItemOpen.addActionListener((e) -> open());
+        menuItemOpen.addActionListener((e) -> openDialog());
 
         fileMenu.add(menuItemSave);
         fileMenu.add(menuItemOpen);
@@ -234,6 +229,11 @@ public class Main {
                     for (Panel panel : contentPanel.getPanelList())
                         panel.updateColor();
                 }
+
+                if ((line = br.readLine()) != null) {
+                    String filePath = line.split(":")[1];
+                    loadFile(new File(filePath));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -244,6 +244,7 @@ public class Main {
         try (FileWriter fw = new FileWriter("config.txt")) {
             String s = "Antialiasing:" + String.valueOf(contentPanel.getAntilasing()) + System.lineSeparator();
             s += "Color:" + toHexString(Panel.getColor()) + System.lineSeparator();
+            s += "OpenFile:" + openFile.getPath() + System.lineSeparator();
 
             fw.write(s);
         } catch (IOException e) {
@@ -337,7 +338,7 @@ public class Main {
 
     // Ist System.lineSeperator() gut???
     // Type-Check speichern
-    private void save() {
+    private void saveDialog() {
         FileNameExtensionFilter fileFilter = new FileNameExtensionFilter(".stb - Stammbaum Speicherdateien", "stb");
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(fileFilter);
@@ -366,59 +367,65 @@ public class Main {
         }
     }
 
-    private void open() {
+    private void openDialog() {
         FileNameExtensionFilter fileFilter = new FileNameExtensionFilter(".stb - Stammbaum Speicherdateien", "stb");
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(fileFilter);
 
         int option = fileChooser.showOpenDialog(frame);
         if (option == JFileChooser.APPROVE_OPTION) {
-            if (fileChooser.getSelectedFile().getName().endsWith(".stb")) {
-                contentPanel.clear();
+            if (fileChooser.getSelectedFile().getName().endsWith(".stb"))
+                loadFile(fileChooser.getSelectedFile());
+        }
+    }
 
-                int state = -1; // 0 = panels, 1 = relations
+    private void loadFile(File file) {
+        contentPanel.clear();
 
-                try (BufferedReader br = new BufferedReader(new FileReader(fileChooser.getSelectedFile()))) {
-                    String line;
-                    while (true) {
-                        line = br.readLine();
-                        if (line == null)
-                            break;
+        int state = -1; // 0 = panels, 1 = relations
 
-                        if (line.equals("P:")) {
-                            state = 0;
-                            continue;
-                        }
-                        else if (line.equals("R:")) {
-                            state = 1;
-                            continue;
-                        }
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while (true) {
+                line = br.readLine();
+                if (line == null)
+                    break;
 
-                        switch (state) {
-                            case 0: {
-                                String name = line;
-                                int x = Integer.parseInt(br.readLine());
-                                int y = Integer.parseInt(br.readLine());
+                if (line.equals("P:")) {
+                    state = 0;
+                    continue;
+                }
+                else if (line.equals("R:")) {
+                    state = 1;
+                    continue;
+                }
 
-                                contentPanel.newPanel(name, x, y);
-                            } break;
+                switch (state) {
+                    case 0: {
+                        String name = line;
+                        int x = Integer.parseInt(br.readLine());
+                        int y = Integer.parseInt(br.readLine());
 
-                            case 1: {
-                                String srcName = line;
-                                String targetName = br.readLine();
+                        contentPanel.newPanel(name, x, y);
+                    } break;
 
-                                contentPanel.newRelation(contentPanel.getPanel(srcName), contentPanel.getPanel(targetName), Relation.Type.CHILD);
-                            } break;
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    case 1: {
+                        String srcName = line;
+                        String targetName = br.readLine();
+
+                        contentPanel.newRelation(contentPanel.getPanel(srcName), contentPanel.getPanel(targetName), Relation.Type.CHILD);
+                    } break;
                 }
             }
 
-            contentPanel.repaint();
-            contentPanel.revalidate();
+            openFile = file;
+            storeSettings();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
+        contentPanel.repaint();
+        contentPanel.revalidate();
     }
 
     private void searchDialog() {
