@@ -330,7 +330,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
             normedSelectionRectangle.setBounds(drawX, drawY, drawW, drawH);
 
-            g2.setColor(Color.black);
+            g2.setColor(Panel.getColor().darker().darker());
             g2.drawRect(drawX, drawY, drawW, drawH);
             g2.setColor(new Color(Panel.getColor().getRed(), Panel.getColor().getGreen(), Panel.getColor().getBlue(), 50));
             g2.fillRect(drawX, drawY, drawW, drawH);

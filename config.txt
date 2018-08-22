@@ -1,2 +1,0 @@
-Antialiasing:false
-Color:#7ed2ee
