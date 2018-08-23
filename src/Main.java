@@ -144,10 +144,13 @@ public class Main {
 
         JMenuItem menuItemColor = new JMenuItem("Farbe");
         menuItemColor.addActionListener((e) -> {
-            Panel.setColor(JColorChooser.showDialog(frame, "Farbe auswählen", Panel.getColor()));
-            for (Panel panel : contentPanel.getPanelList())
-                panel.updateColor();
-            storeSettings();
+            Color color = JColorChooser.showDialog(frame, "Farbe auswählen", Panel.getColor());
+            if (color != null) {
+                Panel.setColor(color);
+                for (Panel panel : contentPanel.getPanelList())
+                    panel.updateColor();
+                storeSettings();
+            }
         });
 
         viewMenu.add(checkboxAntialiasing);
@@ -276,24 +279,12 @@ public class Main {
         if (option == JOptionPane.OK_OPTION) {
             String name = field.getText();
             if (!name.equals("")) {
-                panel = newPanel(name, x, y);
+                panel = contentPanel.newPanel(name, x, y);
 
                 contentPanel.repaint();
                 contentPanel.revalidate();
             }
         }
-
-        return panel;
-    }
-
-    private Panel newPanel(String name, int x, int y) {
-        Panel panel = contentPanel.newPanel(name, x, y);
-
-        /*ArrayList<String> objects = new ArrayList<>(1);
-        objects.add(name);
-        ArrayList<Point> positions = new ArrayList<>(1);
-        positions.add(new Point(x, y));
-        actionStack.addAction(new Action(0, objects, positions));*/
 
         return panel;
     }
@@ -313,25 +304,13 @@ public class Main {
             Panel targetPanel = contentPanel.getPanel(targetField.getText());
             if (srcPanel != null && targetPanel != null) {
                 if (relationTypes.getSelectedItem() == "ist Kind von") {
-                    newRelation(srcPanel, targetPanel, Relation.Type.CHILD);
+                    contentPanel.newRelation(srcPanel, targetPanel, Relation.Type.CHILD);
 
                     contentPanel.repaint();
                     contentPanel.revalidate();
                 }
             }
         }
-    }
-
-    private Relation newRelation(Panel srcPanel, Panel targetPanel, Relation.Type type) {
-        Relation relation = contentPanel.newRelation(srcPanel, targetPanel, type);
-
-        /*ArrayList<String> objects = new ArrayList<>(3);
-        objects.add(srcPanel.getName());
-        objects.add(targetPanel.getName());
-        objects.add(("CHILD"));
-        actionStack.addAction(new Action(2, objects, null));*/
-
-        return relation;
     }
 
     private void deletePanelDialog() {

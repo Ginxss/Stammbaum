@@ -70,8 +70,11 @@ public class RelationList {
     public void removeRelationsWith(Panel panel) {
         for (int i = allRelations.size() - 1; i >= 0; i--) {
             Relation relation = allRelations.get(i);
-            if (relation.srcPanel == panel || relation.targetPanel == panel)
+            if (relation.srcPanel == panel || relation.targetPanel == panel) {
                 remove(relation);
+
+                ActionStack.appendRelationAction(false, relation.srcPanel.getName(), relation.targetPanel.getName(), relation.type);
+            }
         }
     }
 }

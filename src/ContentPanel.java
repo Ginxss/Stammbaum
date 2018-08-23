@@ -48,6 +48,10 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         antialiasing = false;
     }
 
+    public Content getContent() {
+        return content;
+    }
+
     public LinkedList<Panel> getPanelList() {
         return content.getPanelList();
     }
@@ -79,19 +83,35 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     public Panel newPanel(String name, int x, int y) {
         Panel panel = content.newPanel(name, x, y);
         if (panel != null) {
-            panel.setComponentPopupMenu(new PanelRightClickMenu(panel));
+            addMenu(panel);
             add(panel);
+
+            ActionStack.addPanelAction(true, name, new Point(x, y));
         }
         return panel;
+    }
+
+    public void addMenu(Panel panel) {
+        panel.setComponentPopupMenu(new PanelRightClickMenu(panel));
     }
 
     public Relation newRelation(Panel srcPanel, Panel targetPanel, Relation.Type type) {
         Relation relation = content.newRelation(srcPanel, targetPanel, type);
         updateChildParentGroups();
+
+        ActionStack.addRelationAction(true, srcPanel.getName(), targetPanel.getName(), type);
         return relation;
     }
 
+    public Relation newRelation(String srcName, String targetName, Relation.Type type) {
+        Panel srcPanel = getPanel(srcName);
+        Panel targetPanel = getPanel(targetName);
+        return newRelation(srcPanel, targetPanel, type);
+    }
+
     public boolean deletePanel(int i) {
+        ActionStack.addPanelAction(false, content.getPanel(i).getName(), content.getPanel(i).getLocation());
+
         remove(content.getPanel(i));
         boolean result = content.deletePanel(i);
         updateChildParentGroups();
@@ -99,6 +119,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     }
 
     public boolean deletePanel(String name) {
+        ActionStack.addPanelAction(false, name, content.getPanel(name).getLocation());
+
         remove(content.getPanel(name));
         boolean result = content.deletePanel(name);
         updateChildParentGroups();
@@ -108,6 +130,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     public boolean deleteRelation(String srcName, String targetName, Relation.Type type) {
         boolean result = content.deleteRelation(srcName, targetName, type);
         updateChildParentGroups();
+
+        ActionStack.addRelationAction(false, srcName, targetName, type);
         return result;
     }
 
@@ -123,9 +147,13 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     }
 
     public void clear() {
-        for (Panel panel : content.getPanelList())
+        for (int i = content.getPanelList().size() - 1; i >= 0; i--) {
+            Panel panel = content.getPanel(i);
             remove(panel);
-        content.clear();
+            deletePanel(panel.getName());
+        }
+
+        content.getSelectedPanels().clear();
         updateChildParentGroups();
 
         repaint();
@@ -141,6 +169,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 if (panel1 != panel)
                     panel1.setLocation(panel1.getX() + diff.x, panel1.getY() + diff.y);
             }
+            updateChildParentGroups();
         }
     }
 
@@ -212,7 +241,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         return new Point(x, y);
     }
 
-    private void updateChildParentGroups() {
+    public void updateChildParentGroups() {
         groups.clear();
 
         LinkedList<Relation> usedChildRelations = new LinkedList<>();
@@ -499,6 +528,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             String name = field.getText();
             if (!name.equals("")) {
                 content.renamePanel(oldName, name);
+
+                ActionStack.addRenameAction(oldName, name);
                 repaint();
                 return true;
             }

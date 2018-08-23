@@ -52,6 +52,12 @@ public class Content {
         return null;
     }
 
+    public Relation newRelation(String srcName, String targetName, Relation.Type type) {
+        Panel srcPanel = getPanel(srcName);
+        Panel targetPanel = getPanel(targetName);
+        return newRelation(srcPanel, targetPanel, type);
+    }
+
     public boolean deletePanel(int i) {
         return delete_panel(getPanel(i));
     }
@@ -81,12 +87,6 @@ public class Content {
                 return true;
             }
         return false;
-    }
-
-    public void clear() {
-        relationList.clear();
-        panelList.clear();
-        selectedPanels.clear();
     }
 
     public void updateSelectedPanels() {
