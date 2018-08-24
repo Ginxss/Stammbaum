@@ -1,73 +1,6 @@
 import java.awt.*;
 import java.util.LinkedList;
 
-/*
-Soll für Undo / Redo zuständig sein.
-
-Speichert stackförmig alle aktionen die durchgeführt werden, also:
--> Panels dazugekommen oder gelöscht, Relationen dazugekommen oder gelöscht
-
-Jedes mal wenn eine dieser Aktionen durchgeführt wird, wird sie auf diesen Stack gespeichert.
-
-Bei Undo wird das oberste StackElement genommen und genau das Gegenteil ausgeführt, das StackElement wird nicht gelöscht für ein potentielles
-Redo... nur die Head-Position im Stack verändert sich.
-
-Bei Redo wird im Stack eins "hoch gegangen" und genau diese Aktion ausgeführt.
-Wenn eine Aktion ausgeführt wird, wird alles über dem Head weggerworfen und das neue StackElement oben drauf gesetzt.
-
-Umbennen muss mit rein
-*/
-
-interface Action {
-    String getType();
-}
-
-class PanelAction implements Action {
-    public boolean add;
-    public String object;
-    public Point position;
-
-    public PanelAction(boolean add, String object, Point position) {
-        this.add = add;
-        this.object = object;
-        this.position = position;
-    }
-
-    public String getType() {
-        return "Panel";
-    }
-}
-
-class RelationAction implements Action {
-    public boolean add;
-    public String srcName, targetName;
-    public Relation.Type relationType;
-
-    public RelationAction(boolean add, String srcName, String targetName, Relation.Type relationType) {
-        this.add = add;
-        this.srcName = srcName;
-        this.targetName = targetName;
-        this.relationType = relationType;
-    }
-
-    public String getType() {
-        return "Relation";
-    }
-}
-
-class RenameAction implements Action {
-    public String oldName, newName;
-
-    public RenameAction(String oldName, String newName) {
-        this.oldName = oldName;
-        this.newName = newName;
-    }
-
-    public String getType() {
-        return "Rename";
-    }
-}
-
 class StackElement {
     public LinkedList<Action> data;
     public StackElement below;
@@ -173,29 +106,8 @@ public class ActionStack {
     private static void addAction(Action action) {
         head.above = new StackElement(action, head, null);
         head = head.above;
-
-        /*StackElement element = head;
-        System.out.println("---------------------------------");
-        while (element != null) {
-            for (Action a : element.data) {
-                System.out.print(a.getType() + ", ");
-                if (a.getType().equals("Panel")) {
-                    System.out.print(((PanelAction)a).add + " " + ((PanelAction)a).object + " " + ((PanelAction)a).position.x + " " + ((PanelAction)a).position.y);
-                }
-                else {
-                    System.out.print(((RelationAction)a).add + " " + ((RelationAction)a).srcName + " " + ((RelationAction)a).targetName);
-                }
-                System.out.println();
-            }
-
-            System.out.println();
-            element = element.below;
-        }*/
     }
 
-    // Weg finden, mehrere panels / relationen gleichzeitig wiederherzustellen...
-
-    // Problem bei head ist ganze liste...
     public void undo() {
         if (head.below == null)
             return;
@@ -249,7 +161,6 @@ public class ActionStack {
 
         head.sortRelationStart();
 
-        // Hier manchmal null???
         for (Action action : head.data) {
             if (action.getType().equals("Panel")) {
                 PanelAction pAction = (PanelAction)action;
