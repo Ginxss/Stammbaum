@@ -110,7 +110,14 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     }
 
     public boolean deletePanel(int i) {
-        ActionStack.addPanelAction(false, content.getPanel(i).getName(), content.getPanel(i).getLocation());
+        return deletePanel(i, false);
+    }
+
+    public boolean deletePanel(int i, boolean appendAction) {
+        if (appendAction)
+            ActionStack.appendPanelAction(false, content.getPanel(i).getName(), content.getPanel(i).getLocation());
+        else
+            ActionStack.addPanelAction(false, content.getPanel(i).getName(), content.getPanel(i).getLocation());
 
         remove(content.getPanel(i));
         boolean result = content.deletePanel(i);
@@ -119,7 +126,14 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     }
 
     public boolean deletePanel(String name) {
-        ActionStack.addPanelAction(false, name, content.getPanel(name).getLocation());
+        return deletePanel(name, false);
+    }
+
+    public boolean deletePanel(String name, boolean appendAction) {
+        if (appendAction)
+            ActionStack.appendPanelAction(false, name, content.getPanel(name).getLocation());
+        else
+            ActionStack.addPanelAction(false, name, content.getPanel(name).getLocation());
 
         remove(content.getPanel(name));
         boolean result = content.deletePanel(name);
@@ -139,7 +153,11 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         content.updateSelectedPanels();
         for (int i = content.getSelectedPanels().size() - 1; i >= 0; i--) {
             int pos = content.getSelectedPanels().get(i);
-            deletePanel(pos);
+
+            if (i == content.getSelectedPanels().size() - 1)
+                deletePanel(pos, false);
+            else
+                deletePanel(pos, true);
         }
 
         repaint();
@@ -147,11 +165,9 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     }
 
     public void clear() {
-        for (int i = content.getPanelList().size() - 1; i >= 0; i--) {
-            Panel panel = content.getPanel(i);
-            remove(panel);
-            deletePanel(panel.getName());
-        }
+        for (Panel panel : content.getPanelList())
+            panel.select();
+        deleteSelected();
 
         content.getSelectedPanels().clear();
         updateChildParentGroups();

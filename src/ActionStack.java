@@ -79,6 +79,56 @@ class StackElement {
         this.below = below;
         this.above = above;
     }
+
+    public void sortPanelStart() {
+        LinkedList<Action> panelActions = new LinkedList<>();
+        LinkedList<Action> relationActions = new LinkedList<>();
+        LinkedList<Action> renameActions = new LinkedList<>();
+
+        for (Action action : data) {
+            switch (action.getType()) {
+            case "Panel":
+                panelActions.add(action);
+                break;
+            case "Relation":
+                relationActions.add(action);
+                break;
+            case "Rename":
+                renameActions.add(action);
+                break;
+            }
+        }
+
+        data.clear();
+        data.addAll(panelActions);
+        data.addAll(relationActions);
+        data.addAll(renameActions);
+    }
+
+    public void sortRelationStart() {
+        LinkedList<Action> relationActions = new LinkedList<>();
+        LinkedList<Action> panelActions = new LinkedList<>();
+        LinkedList<Action> renameActions = new LinkedList<>();
+
+        for (Action action : data) {
+            switch (action.getType()) {
+                case "Relation":
+                    relationActions.add(action);
+                    break;
+                case "Panel":
+                    panelActions.add(action);
+                    break;
+                case "Rename":
+                    renameActions.add(action);
+                    break;
+            }
+        }
+
+        data.clear();
+        data.addAll(relationActions);
+        data.addAll(panelActions);
+        data.addAll(renameActions);
+    }
 }
 
 public class ActionStack {
@@ -143,10 +193,14 @@ public class ActionStack {
         }*/
     }
 
+    // Weg finden, mehrere panels / relationen gleichzeitig wiederherzustellen...
+
     // Problem bei head ist ganze liste...
     public void undo() {
         if (head.below == null)
             return;
+
+        head.sortPanelStart();
 
         for (Action action : head.data) {
             if (action.getType().equals("Panel")) {
@@ -192,6 +246,8 @@ public class ActionStack {
             return;
 
         head = head.above;
+
+        head.sortRelationStart();
 
         // Hier manchmal null???
         for (Action action : head.data) {
