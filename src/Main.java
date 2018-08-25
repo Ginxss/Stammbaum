@@ -34,9 +34,9 @@ public class Main {
     public Main() {
         initWindow();
 
-        addComponents();
-
         loadSettings();
+
+        addComponents();
 
         frame.repaint();
         frame.revalidate();
@@ -112,7 +112,8 @@ public class Main {
         try (FileWriter fw = new FileWriter("config.txt")) {
             String s = "Antialiasing:" + String.valueOf(contentPanel.getAntilasing()) + System.lineSeparator();
             s += "Color:" + toHexString(Panel.getColor()) + System.lineSeparator();
-            s += "OpenFile:" + openFile.getPath() + System.lineSeparator();
+            if (openFile != null)
+                s += "OpenFile:" + openFile.getPath() + System.lineSeparator();
 
             fw.write(s);
         } catch (IOException e) {
@@ -268,8 +269,10 @@ public class Main {
 
         int option = fileChooser.showOpenDialog(frame);
         if (option == JFileChooser.APPROVE_OPTION) {
-            if (fileChooser.getSelectedFile().getName().endsWith(".stb"))
+            if (fileChooser.getSelectedFile().getName().endsWith(".stb")) {
                 loadFile(fileChooser.getSelectedFile());
+                storeSettings();
+            }
         }
     }
 
@@ -313,8 +316,6 @@ public class Main {
             }
 
             openFile = file;
-            storeSettings();
-
             actionStack.clear();
         } catch (IOException e) {
             e.printStackTrace();

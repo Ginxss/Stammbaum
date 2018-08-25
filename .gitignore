@@ -25,6 +25,8 @@ hs_err_pid*
 # IntelliJ
 .idea
 *.iml
+MANIFEST.MF
+build/
 
 #Project
 config.txt
