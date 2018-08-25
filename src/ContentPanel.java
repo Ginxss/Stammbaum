@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
@@ -24,7 +26,9 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     private boolean drawBorder;
     private boolean antialiasing;
 
-    public ContentPanel() {
+    private JLabel statusLabel;
+
+    public ContentPanel(JLabel statusLabel) {
         super(null);
 
         addMouseListener(this);
@@ -44,8 +48,10 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
         createRelationTarget = new Point();
 
-        drawBorder = false;
+        drawBorder = true;
         antialiasing = false;
+
+        this.statusLabel = statusLabel;
     }
 
     public Content getContent() {
@@ -87,6 +93,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             add(panel);
 
             ActionStack.addPanelAction(true, name, new Point(x, y));
+
+            statusLabel.setText("Anzahl Personen: " + String.valueOf(content.getPanelList().size()));
         }
         return panel;
     }
@@ -122,6 +130,9 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         remove(content.getPanel(i));
         boolean result = content.deletePanel(i);
         updateChildParentGroups();
+
+        statusLabel.setText("Anzahl Personen: " + String.valueOf(content.getPanelList().size()));
+
         return result;
     }
 
@@ -138,6 +149,9 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         remove(content.getPanel(name));
         boolean result = content.deletePanel(name);
         updateChildParentGroups();
+
+        statusLabel.setText("Anzahl Personen: " + String.valueOf(content.getPanelList().size()));
+
         return result;
     }
 
@@ -230,6 +244,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         paint(img.createGraphics());
 
         antialiasing = orgAntialiasing;
+        drawBorder = true;
 
         for (int i = 0; i < content.getPanelList().size(); i++)
             content.getPanel(i).setLocation(orgPos.get(i));
@@ -328,7 +343,9 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
         if (drawBorder) {
             g2.setColor(Color.black);
-            g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+            g2.drawLine(0, 0, 0, getHeight());
+            g2.drawLine(getWidth() - 1,  0, getWidth() - 1, getHeight());
+            //g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
         }
     }
 
@@ -535,7 +552,27 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
     private boolean renamePanelDialog(String oldName) {
         JTextField field = new JTextField();
-        field.addAncestorListener(new RequestFocusListener());
+        field.addAncestorListener(new AncestorListener() {
+            @Override
+            public void ancestorAdded(AncestorEvent ancestorEvent) {
+                field.requestFocusInWindow();
+            }
+
+            @Override
+            public void ancestorRemoved(AncestorEvent ancestorEvent) {}
+            @Override
+            public void ancestorMoved(AncestorEvent ancestorEvent) {}
+        });
+        field.addFocusListener(new FocusAdapter() {
+            private boolean firstTime = true;
+            @Override
+            public void focusLost(FocusEvent focusEvent) {
+                if (firstTime) {
+                    field.requestFocusInWindow();
+                    firstTime = false;
+                }
+            }
+        });
 
         JComponent[] inputs = new JComponent[] {new JLabel("Neuer Name:"), field};
 

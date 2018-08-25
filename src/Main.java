@@ -1,25 +1,29 @@
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.KeyEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
 // TODO: Automatisches Sortieren
-// TODO: Undo / Redo ...
+// TODO: Listentypen anpassen
 public class Main {
     private JFrame frame;
     private JPanel backgroundPanel;
+
+    private Menu menu;
+    private TaskBarPanel taskBarPanel;
 
     private JPanel cardPanel;
     private ContentPanel contentPanel;
     private NavModePanel navModePanel;
 
-    private ActionStack actionStack;
+    private StatusPanel statusPanel;
 
-    private JPanel taskBarPanel;
-    private JCheckBoxMenuItem checkboxAntialiasing;
+    private ActionStack actionStack;
 
     private File openFile;
 
@@ -28,11 +32,7 @@ public class Main {
     }
 
     public Main() {
-        createWindow();
-
-        createMenu();
-
-        createTaskBar();
+        initWindow();
 
         addComponents();
 
@@ -42,7 +42,7 @@ public class Main {
         frame.revalidate();
     }
 
-    private void createWindow() {
+    private void initWindow() {
         frame = new JFrame();
         frame.setSize(800, 600);
         frame.setTitle("Stammbaum");
@@ -51,163 +51,22 @@ public class Main {
 
         backgroundPanel = new JPanel(new BorderLayout());
 
+        taskBarPanel = new TaskBarPanel(this);
+        taskBarPanel.init();
+
+        statusPanel = new StatusPanel();
+        statusPanel.init();
+
         cardPanel = new JPanel(new CardLayout());
-
-        contentPanel = new ContentPanel();
+        contentPanel = new ContentPanel(statusPanel.getLabel());
         contentPanel.setComponentPopupMenu(new ContentPanelRightClickMenu());
-
         navModePanel = new NavModePanel();
 
         actionStack = new ActionStack(contentPanel);
 
+        menu = new Menu(this, frame, contentPanel, actionStack);
+
         openFile = null;
-    }
-
-    private void createMenu() {
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu fileMenu = new JMenu("Datei");
-        JMenu editMenu = new JMenu("Bearbeiten");
-        JMenu viewMenu = new JMenu("Anzeige");
-
-        JMenuItem menuItemSave = new JMenuItem("Speichern");
-        menuItemSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
-        menuItemSave.addActionListener((e) -> saveDialog());
-
-        JMenuItem menuItemOpen = new JMenuItem("Öffnen");
-        menuItemOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
-        menuItemOpen.addActionListener((e) -> openDialog());
-
-        fileMenu.add(menuItemSave);
-        fileMenu.add(menuItemOpen);
-
-        JMenuItem menuItemUndo = new JMenuItem("Rückgängig");
-        menuItemUndo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK));
-        menuItemUndo.addActionListener((e) -> actionStack.undo());
-
-        JMenuItem menuItemRedo = new JMenuItem("Wiederholen");
-        menuItemRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK));
-        menuItemRedo.addActionListener((e) -> actionStack.redo());
-
-        JMenuItem menuItemNewPanel = new JMenuItem("Neue Person");
-        menuItemNewPanel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
-        menuItemNewPanel.addActionListener((e) -> newPanelDialog(10, 10));
-
-        JMenuItem menuItemNewRelation = new JMenuItem("Neue Beziehung");
-        menuItemNewRelation.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
-        menuItemNewRelation.addActionListener((e) -> newRelationDialog());
-
-        JMenuItem menuItemDeletePanel = new JMenuItem("Person löschen");
-        menuItemDeletePanel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK));
-        menuItemDeletePanel.addActionListener((e) -> deletePanelDialog());
-
-        JMenuItem menuItemDeleteRelation = new JMenuItem("Beziehung löschen");
-        menuItemDeleteRelation.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
-        menuItemDeleteRelation.addActionListener((e) -> deleteRelationDialog());
-
-        JMenuItem menuItemDeleteSelected = new JMenuItem("Auswahl löschen");
-        menuItemDeleteSelected.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK));
-        menuItemDeleteSelected.addActionListener((e) -> contentPanel.deleteSelected());
-
-        JMenuItem menuItemClear = new JMenuItem("Alles löschen");
-        menuItemClear.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
-        menuItemClear.addActionListener((e) -> contentPanel.clear());
-
-        JMenuItem menuItemSearchPanel = new JMenuItem("Nach Person Suchen");
-        menuItemSearchPanel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK));
-        menuItemSearchPanel.addActionListener((e) -> searchDialog());
-
-        JMenuItem menuItemNavMode = new JMenuItem("Navigationsmodus");
-        menuItemNavMode.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
-        menuItemNavMode.addActionListener((e) -> enterNavMode());
-
-        editMenu.add(menuItemUndo);
-        editMenu.add(menuItemRedo);
-        editMenu.addSeparator();
-        editMenu.add(menuItemNewPanel);
-        editMenu.add(menuItemNewRelation);
-        editMenu.addSeparator();
-        editMenu.add(menuItemDeletePanel);
-        editMenu.add(menuItemDeleteRelation);
-        editMenu.addSeparator();
-        editMenu.add(menuItemDeleteSelected);
-        editMenu.add(menuItemClear);
-        editMenu.addSeparator();
-        editMenu.add(menuItemSearchPanel);
-        editMenu.add(menuItemNavMode);
-
-        checkboxAntialiasing = new JCheckBoxMenuItem("Glatte Linien");
-        checkboxAntialiasing.addActionListener((e) -> {
-            contentPanel.toggleAntialiasing();
-            storeSettings();
-        });
-
-        JMenuItem menuItemColor = new JMenuItem("Farbe");
-        menuItemColor.addActionListener((e) -> {
-            Color color = JColorChooser.showDialog(frame, "Farbe auswählen", Panel.getColor());
-            if (color != null) {
-                Panel.setColor(color);
-                for (Panel panel : contentPanel.getPanelList())
-                    panel.updateColor();
-                storeSettings();
-            }
-        });
-
-        viewMenu.add(checkboxAntialiasing);
-        viewMenu.add(menuItemColor);
-
-        menuBar.add(fileMenu);
-        menuBar.add(editMenu);
-        menuBar.add(viewMenu);
-
-        frame.setJMenuBar(menuBar);
-    }
-
-    private void createTaskBar() {
-        taskBarPanel = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-
-                Graphics2D g2 = (Graphics2D)g;
-                GradientPaint gp = new GradientPaint(0, 0, getBackground(), getWidth(), 0, getBackground().brighter());
-                g2.setPaint(gp);
-                g2.fillRect(0, 0, getWidth(), getHeight());
-
-                g2.setColor(Color.black);
-                g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
-            }
-        };
-
-        taskBarPanel.setLayout(new BoxLayout(taskBarPanel, BoxLayout.X_AXIS));
-        taskBarPanel.setBackground(Color.decode("#bac7d8"));
-        taskBarPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-
-        JButton newPanelButton = new JButton(new ImageIcon("newPanel.png"));
-        newPanelButton.addActionListener((e) -> newPanelDialog(10, 10));
-
-        JButton newRelationButton = new JButton(new ImageIcon("newRelation.png"));
-        newRelationButton.addActionListener((e) -> newRelationDialog());
-
-        JButton deletePanelButton = new JButton(new ImageIcon("deletePanel.png"));
-        deletePanelButton.addActionListener((e) -> deletePanelDialog());
-
-        JButton deleteRelationButton = new JButton(new ImageIcon("deleteRelation.png"));
-        deleteRelationButton.addActionListener((e) -> deleteRelationDialog());
-
-        JButton navModeButton = new JButton(new ImageIcon("navmode.png"));
-        navModeButton.addActionListener((e) -> enterNavMode());
-
-        Dimension space = new Dimension(5, 5);
-        taskBarPanel.add(newPanelButton);
-        taskBarPanel.add(Box.createRigidArea(space));
-        taskBarPanel.add(newRelationButton);
-        taskBarPanel.add(Box.createRigidArea(space));
-        taskBarPanel.add(deletePanelButton);
-        taskBarPanel.add(Box.createRigidArea(space));
-        taskBarPanel.add(deleteRelationButton);
-        taskBarPanel.add(Box.createRigidArea(space));
-        taskBarPanel.add(navModeButton);
     }
 
     private void addComponents() {
@@ -215,11 +74,12 @@ public class Main {
         cardPanel.add(navModePanel, "NavMode");
         backgroundPanel.add(cardPanel, BorderLayout.CENTER);
         backgroundPanel.add(taskBarPanel, BorderLayout.NORTH);
+        backgroundPanel.add(statusPanel, BorderLayout.SOUTH);
         frame.getContentPane().add(backgroundPanel);
         frame.setVisible(true);
     }
 
-    private void loadSettings() {
+    public void loadSettings() {
         File file = new File("config.txt");
         if (file.exists()) {
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -228,7 +88,7 @@ public class Main {
                 if ((line = br.readLine()) != null) {
                     String antialiasingValue = line.split(":")[1];
                     if (antialiasingValue.equals("true"))
-                        checkboxAntialiasing.doClick();
+                        menu.checkboxAntialiasing.doClick();
                 }
 
                 if ((line = br.readLine()) != null) {
@@ -248,7 +108,7 @@ public class Main {
         }
     }
 
-    private void storeSettings() {
+    public void storeSettings() {
         try (FileWriter fw = new FileWriter("config.txt")) {
             String s = "Antialiasing:" + String.valueOf(contentPanel.getAntilasing()) + System.lineSeparator();
             s += "Color:" + toHexString(Panel.getColor()) + System.lineSeparator();
@@ -267,11 +127,36 @@ public class Main {
         return "#" + hexColor;
     }
 
-    private Panel newPanelDialog(int x, int y) {
+    private void requestFocus(JTextField field) {
+        field.addAncestorListener(new AncestorListener() {
+            @Override
+            public void ancestorAdded(AncestorEvent ancestorEvent) {
+                field.requestFocusInWindow();
+            }
+
+            @Override
+            public void ancestorRemoved(AncestorEvent ancestorEvent) {}
+            @Override
+            public void ancestorMoved(AncestorEvent ancestorEvent) {}
+        });
+
+        field.addFocusListener(new FocusAdapter() {
+            private boolean firstTime = true;
+            @Override
+            public void focusLost(FocusEvent focusEvent) {
+                if (firstTime) {
+                    field.requestFocusInWindow();
+                    firstTime = false;
+                }
+            }
+        });
+    }
+
+    public Panel newPanelDialog(int x, int y) {
         Panel panel = null;
 
         JTextField field = new JTextField();
-        field.addAncestorListener(new RequestFocusListener());
+        requestFocus(field);
 
         JComponent[] inputs = new JComponent[] {new JLabel("Name:"), field};
 
@@ -289,9 +174,9 @@ public class Main {
         return panel;
     }
 
-    private void newRelationDialog() {
+    public void newRelationDialog() {
         JTextField srcField = new JTextField();
-        srcField.addAncestorListener(new RequestFocusListener());
+        requestFocus(srcField);
         String[] types = {"ist Kind von"};
         JComboBox relationTypes = new JComboBox(types);
         JTextField targetField = new JTextField();
@@ -313,9 +198,9 @@ public class Main {
         }
     }
 
-    private void deletePanelDialog() {
+    public void deletePanelDialog() {
         JTextField field = new JTextField();
-        field.addAncestorListener(new RequestFocusListener());
+        requestFocus(field);
 
         JComponent[] inputs = new JComponent[] {new JLabel("Name:"), field};
 
@@ -327,9 +212,9 @@ public class Main {
         }
     }
 
-    private void deleteRelationDialog() {
+    public void deleteRelationDialog() {
         JTextField srcField = new JTextField();
-        srcField.addAncestorListener(new RequestFocusListener());
+        requestFocus(srcField);
         String[] types = {"ist Kind von"};
         JComboBox relationTypes = new JComboBox(types);
         JTextField targetField = new JTextField();
@@ -346,9 +231,8 @@ public class Main {
         }
     }
 
-    // Ist System.lineSeperator() gut???
     // Type-Check speichern
-    private void saveDialog() {
+    public void saveDialog() {
         FileNameExtensionFilter fileFilter = new FileNameExtensionFilter(".stb - Stammbaum Speicherdateien", "stb");
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(fileFilter);
@@ -377,7 +261,7 @@ public class Main {
         }
     }
 
-    private void openDialog() {
+    public void openDialog() {
         FileNameExtensionFilter fileFilter = new FileNameExtensionFilter(".stb - Stammbaum Speicherdateien", "stb");
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(fileFilter);
@@ -440,9 +324,9 @@ public class Main {
         contentPanel.revalidate();
     }
 
-    private void searchDialog() {
+    public void searchDialog() {
         JTextField field = new JTextField();
-        field.addAncestorListener(new RequestFocusListener());
+        requestFocus(field);
 
         JComponent[] inputs = new JComponent[] {new JLabel("Nach Name suchen:"), field};
 
@@ -453,7 +337,7 @@ public class Main {
         }
     }
 
-    private void enterNavMode() {
+    public void enterNavMode() {
         BufferedImage img = contentPanel.takeSnapShot();
         CardLayout cl = (CardLayout)cardPanel.getLayout();
         navModePanel.init(img, contentPanel.getPointOnCanvas(), contentPanel.getPanelList(), contentPanel.getChildParentGroups(), cl);
@@ -470,7 +354,7 @@ public class Main {
                 Point mouseOnScreen = MouseInfo.getPointerInfo().getLocation();
                 Point contentPanelPos = contentPanel.getLocationOnScreen();
 
-                Panel panel = newPanelDialog(mouseOnScreen.x - contentPanelPos.x, mouseOnScreen.y - contentPanelPos.y);
+                newPanelDialog(mouseOnScreen.x - contentPanelPos.x, mouseOnScreen.y - contentPanelPos.y);
             });
 
             newRelationItem = new JMenuItem("Neue Beziehung");
