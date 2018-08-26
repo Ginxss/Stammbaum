@@ -78,10 +78,6 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         return content.getPanel(name);
     }
 
-    public LinkedList<ChildParentGroup> getChildParentGroups() {
-        return groups;
-    }
-
     public boolean getAntilasing() {
         return antialiasing;
     }
@@ -223,7 +219,6 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
         for (Panel panel : content.getPanelList())
             panel.setLocation(panel.getX() - minX, panel.getY() - minY);
-
         for (ChildParentGroup group : groups)
             group.update();
 
@@ -237,8 +232,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             if (panel.getY() + panel.getHeight() > maxHeight)
                 maxHeight = panel.getY() + panel.getHeight();
         }
-
         setSize(maxWidth, maxHeight);
+
         BufferedImage img = new BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_RGB);
 
         paint(img.createGraphics());
@@ -248,7 +243,6 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
         for (int i = 0; i < content.getPanelList().size(); i++)
             content.getPanel(i).setLocation(orgPos.get(i));
-
         for (ChildParentGroup group : groups)
             group.update();
 
@@ -352,24 +346,29 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     private void drawRelations(Graphics2D g2) {
         for (ChildParentGroup group : groups) {
             g2.setColor(Color.green.darker());
-            for (Point point : group.getParentNodes())
-                g2.drawLine(point.x, point.y, group.getParentMiddle().x, group.getParentMiddle().y);
-
-            if (group.getParentMiddle().y > group.getChildMiddle().y) {
-                g2.setColor(Color.red);
-                g2.setStroke(new BasicStroke(2));
-            }
-            else {
-                g2.setColor(Color.blue.brighter());
-                g2.setStroke(new BasicStroke(1));
+            for (Point point : group.getParentNodes()) {
+                g2.drawLine(point.x, point.y, point.x, group.getParentMiddle().y);
+                g2.drawLine(point.x, group.getParentMiddle().y, group.getParentMiddle().x, group.getParentMiddle().y);
             }
 
+            g2.setStroke(new BasicStroke(1));
             g2.drawLine(group.getParentMiddle().x, group.getParentMiddle().y, group.getChildMiddle().x, group.getChildMiddle().y);
 
             g2.setColor(Color.black);
             g2.setStroke(new BasicStroke(1));
-            for (Point point : group.getChildNodes())
-                g2.drawLine(point.x, point.y, group.getChildMiddle().x, group.getChildMiddle().y);
+            for (Point point : group.getChildNodes()) {
+                if (point.y < group.getChildMiddle().y) {
+                    g2.setColor(Color.red);
+                    g2.setStroke(new BasicStroke(2));
+                }
+                g2.drawLine(point.x, point.y, point.x, group.getChildMiddle().y);
+
+                if (g2.getColor() != Color.black) {
+                    g2.setColor(Color.black);
+                    g2.setStroke(new BasicStroke(1));
+                }
+                g2.drawLine(point.x, group.getChildMiddle().y, group.getChildMiddle().x, group.getChildMiddle().y);
+            }
         }
     }
 

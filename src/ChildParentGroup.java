@@ -81,8 +81,8 @@ public class ChildParentGroup {
     }
 
     public void update() {
-        updateChildNodes();
         updateParentNodes();
+        updateChildNodes();
     }
 
     private void updateChildNodes() {
@@ -96,13 +96,18 @@ public class ChildParentGroup {
             childNodes.add(new Point(childX, childY));
 
             childMiddle.x += childX;
+            i++;
 
             if (childY < childMiddle.y)
                 childMiddle.y = childY;
-
-            i++;
         }
         childMiddle.x /= i;
+
+        if (childMiddle.y < parentMiddle.y + 40)
+            childMiddle.y = parentMiddle.y + 40;
+
+        if (children.size() > 1)
+            childMiddle.y -= 20;
     }
 
     private void updateParentNodes() {
@@ -112,19 +117,19 @@ public class ChildParentGroup {
         int i = 0;
         for (Panel panel : parents) {
             int parentX = panel.getX() + panel.getWidth() / 2;
-            int parentY = panel.getY() + panel.getHeight() - 1;
+            int parentY = panel.getY() + panel.getHeight();
             parentNodes.add(new Point(parentX, parentY));
 
             parentMiddle.x += parentX;
+            i++;
 
             if (parentY > parentMiddle.y)
                 parentMiddle.y = parentY;
-
-            i++;
         }
         parentMiddle.x /= i;
-        //if (parents.size() > 1)
-            //parentMiddle.y += (childMiddle.y - parentMiddle.y) / 10;
+
+        if (parents.size() > 1)
+            parentMiddle.y += 20;
     }
 
 

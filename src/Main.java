@@ -341,7 +341,7 @@ public class Main {
     public void enterNavMode() {
         BufferedImage img = contentPanel.takeSnapShot();
         CardLayout cl = (CardLayout)cardPanel.getLayout();
-        navModePanel.init(img, contentPanel.getPointOnCanvas(), contentPanel.getPanelList(), contentPanel.getChildParentGroups(), cl);
+        navModePanel.init(img, contentPanel.getPointOnCanvas(), contentPanel.getPanelList(), cl);
 
         cl.show(cardPanel, "NavMode");
     }
