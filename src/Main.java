@@ -1,15 +1,9 @@
 import javax.swing.*;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
-// TODO: Automatisches Sortieren
-// TODO: Listentypen anpassen
 public class Main {
     private JFrame frame;
     private JPanel backgroundPanel;
@@ -128,36 +122,18 @@ public class Main {
         return "#" + hexColor;
     }
 
-    private void requestFocus(JTextField field) {
-        field.addAncestorListener(new AncestorListener() {
-            @Override
-            public void ancestorAdded(AncestorEvent ancestorEvent) {
-                field.requestFocusInWindow();
-            }
 
-            @Override
-            public void ancestorRemoved(AncestorEvent ancestorEvent) {}
-            @Override
-            public void ancestorMoved(AncestorEvent ancestorEvent) {}
-        });
-
-        field.addFocusListener(new FocusAdapter() {
-            private boolean firstTime = true;
-            @Override
-            public void focusLost(FocusEvent focusEvent) {
-                if (firstTime) {
-                    field.requestFocusInWindow();
-                    firstTime = false;
-                }
-            }
-        });
-    }
 
     public Panel newPanelDialog(int x, int y) {
+        Point mousePos = MouseInfo.getPointerInfo().getLocation();
+        Point contentPanelPos = contentPanel.getLocationOnScreen();
+        int diffX = mousePos.x - contentPanelPos.x;
+        int diffY = mousePos.y - contentPanelPos.y;
+
         Panel panel = null;
 
         JTextField field = new JTextField();
-        requestFocus(field);
+        contentPanel.requestFocus(field);
 
         JComponent[] inputs = new JComponent[] {new JLabel("Name:"), field};
 
@@ -165,7 +141,10 @@ public class Main {
         if (option == JOptionPane.OK_OPTION) {
             String name = field.getText();
             if (!name.equals("")) {
-                panel = contentPanel.newPanel(name, x, y);
+                if (diffX < 0 || diffY < 0)
+                    panel = contentPanel.newPanel(name, x, y);
+                else
+                    panel = contentPanel.newPanel(name, mousePos.x - contentPanelPos.x, mousePos.y - contentPanelPos.y);
 
                 contentPanel.repaint();
                 contentPanel.revalidate();
@@ -177,7 +156,7 @@ public class Main {
 
     public void newRelationDialog() {
         JTextField srcField = new JTextField();
-        requestFocus(srcField);
+        contentPanel.requestFocus(srcField);
         String[] types = {"ist Kind von"};
         JComboBox relationTypes = new JComboBox(types);
         JTextField targetField = new JTextField();
@@ -201,7 +180,7 @@ public class Main {
 
     public void deletePanelDialog() {
         JTextField field = new JTextField();
-        requestFocus(field);
+        contentPanel.requestFocus(field);
 
         JComponent[] inputs = new JComponent[] {new JLabel("Name:"), field};
 
@@ -215,7 +194,7 @@ public class Main {
 
     public void deleteRelationDialog() {
         JTextField srcField = new JTextField();
-        requestFocus(srcField);
+        contentPanel.requestFocus(srcField);
         String[] types = {"ist Kind von"};
         JComboBox relationTypes = new JComboBox(types);
         JTextField targetField = new JTextField();
@@ -327,7 +306,7 @@ public class Main {
 
     public void searchDialog() {
         JTextField field = new JTextField();
-        requestFocus(field);
+        contentPanel.requestFocus(field);
 
         JComponent[] inputs = new JComponent[] {new JLabel("Nach Name suchen:"), field};
 

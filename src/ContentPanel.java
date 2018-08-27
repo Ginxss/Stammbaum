@@ -4,6 +4,7 @@ import javax.swing.event.AncestorListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 
@@ -13,7 +14,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     private LinkedList<ChildParentGroup> groups;
 
     private Point initialMousePos;
-    private LinkedList<Point> panelPositions;
+    private ArrayList<Point> panelPositions;
 
     private Rectangle selectionRectangle;
     private Rectangle normedSelectionRectangle;
@@ -40,7 +41,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         groups = new LinkedList<>();
 
         initialMousePos = new Point();
-        panelPositions = new LinkedList<>();
+        panelPositions = new ArrayList<>();
 
         selectionRectangle = new Rectangle();
         normedSelectionRectangle = new Rectangle();
@@ -54,6 +55,10 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         this.statusLabel = statusLabel;
     }
 
+    public void updateStatus() {
+        statusLabel.setText("Anzahl Personen: " + String.valueOf(content.getPanelList().size()));
+    }
+
     public Content getContent() {
         return content;
     }
@@ -64,14 +69,6 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
     public RelationList getRelationList() {
         return content.getRelationList();
-    }
-
-    public LinkedList<Integer> getSelectedPanels() {
-        return content.getSelectedPanels();
-    }
-
-    public Panel getPanel(int i) {
-        return content.getPanel(i);
     }
 
     public Panel getPanel(String name) {
@@ -90,7 +87,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
             ActionStack.addPanelAction(true, name, new Point(x, y));
 
-            statusLabel.setText("Anzahl Personen: " + String.valueOf(content.getPanelList().size()));
+            updateStatus();
         }
         return panel;
     }
@@ -107,16 +104,6 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         return relation;
     }
 
-    public Relation newRelation(String srcName, String targetName, Relation.Type type) {
-        Panel srcPanel = getPanel(srcName);
-        Panel targetPanel = getPanel(targetName);
-        return newRelation(srcPanel, targetPanel, type);
-    }
-
-    public boolean deletePanel(int i) {
-        return deletePanel(i, false);
-    }
-
     public boolean deletePanel(int i, boolean appendAction) {
         if (appendAction)
             ActionStack.appendPanelAction(false, content.getPanel(i).getName(), content.getPanel(i).getLocation());
@@ -127,7 +114,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         boolean result = content.deletePanel(i);
         updateChildParentGroups();
 
-        statusLabel.setText("Anzahl Personen: " + String.valueOf(content.getPanelList().size()));
+        updateStatus();
 
         return result;
     }
@@ -146,7 +133,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         boolean result = content.deletePanel(name);
         updateChildParentGroups();
 
-        statusLabel.setText("Anzahl Personen: " + String.valueOf(content.getPanelList().size()));
+        updateStatus();
 
         return result;
     }
@@ -424,12 +411,15 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     public void mouseClicked(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e)) {
             if (creatingRelation) {
-                creatingRelation = false;
                 if (e.getSource() instanceof Panel) {
                     Panel targetPanel = (Panel)e.getSource();
                     if (createRelationSrcPanel != targetPanel)
                         newRelation(createRelationSrcPanel, targetPanel, Relation.Type.CHILD);
                 }
+                else {
+                    creatingRelation = false;
+                }
+
                 repaint();
             }
             else {
@@ -549,8 +539,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {}
 
-    private boolean renamePanelDialog(String oldName) {
-        JTextField field = new JTextField();
+    public void requestFocus(JTextField field) {
         field.addAncestorListener(new AncestorListener() {
             @Override
             public void ancestorAdded(AncestorEvent ancestorEvent) {
@@ -562,6 +551,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             @Override
             public void ancestorMoved(AncestorEvent ancestorEvent) {}
         });
+
         field.addFocusListener(new FocusAdapter() {
             private boolean firstTime = true;
             @Override
@@ -572,6 +562,11 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 }
             }
         });
+    }
+
+    private boolean renamePanelDialog(String oldName) {
+        JTextField field = new JTextField();
+        requestFocus(field);
 
         JComponent[] inputs = new JComponent[] {new JLabel("Neuer Name:"), field};
 

@@ -149,6 +149,7 @@ public class ActionStack {
 
         head = head.below;
 
+        contentPanel.updateStatus();
         contentPanel.repaint();
         contentPanel.revalidate();
     }
@@ -194,6 +195,7 @@ public class ActionStack {
             }
         }
 
+        contentPanel.updateStatus();
         contentPanel.repaint();
         contentPanel.revalidate();
     }
