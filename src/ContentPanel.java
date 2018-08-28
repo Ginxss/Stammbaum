@@ -24,8 +24,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     private Point createRelationTarget;
     public static boolean creatingRelation = false;
 
-    private boolean drawBorder;
     private boolean antialiasing;
+    private boolean takingSnapshot;
 
     private JLabel statusLabel;
 
@@ -49,8 +49,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
         createRelationTarget = new Point();
 
-        drawBorder = true;
         antialiasing = false;
+        takingSnapshot = false;
 
         this.statusLabel = statusLabel;
     }
@@ -187,7 +187,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     }
 
     public BufferedImage takeSnapShot() {
-        drawBorder = false;
+        takingSnapshot = true;
         boolean orgAntialiasing = antialiasing;
         antialiasing = true;
 
@@ -226,7 +226,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         paint(img.createGraphics());
 
         antialiasing = orgAntialiasing;
-        drawBorder = true;
+        takingSnapshot = false;
 
         for (int i = 0; i < content.getPanelList().size(); i++)
             content.getPanel(i).setLocation(orgPos.get(i));
@@ -316,17 +316,19 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         Object ant = (antialiasing) ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, ant);
 
-        drawRelations(g2);
+        if (takingSnapshot) {
+            g2.setStroke(new BasicStroke(2));
+            drawRelations(g2);
+        }
+        else {
+            g2.setStroke(new BasicStroke(1));
+            drawRelations(g2);
+            drawSelectionRectangle(g2);
+            drawCreatingRelation(g2);
 
-        drawSelectionRectangle(g2);
-
-        drawCreatingRelation(g2);
-
-        if (drawBorder) {
             g2.setColor(Color.black);
             g2.drawLine(0, 0, 0, getHeight());
             g2.drawLine(getWidth() - 1,  0, getWidth() - 1, getHeight());
-            //g2.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
         }
     }
 
@@ -338,11 +340,9 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 g2.drawLine(point.x, group.getParentMiddle().y, group.getParentMiddle().x, group.getParentMiddle().y);
             }
 
-            g2.setStroke(new BasicStroke(1));
             g2.drawLine(group.getParentMiddle().x, group.getParentMiddle().y, group.getChildMiddle().x, group.getChildMiddle().y);
 
             g2.setColor(Color.black);
-            g2.setStroke(new BasicStroke(1));
             for (Point point : group.getChildNodes()) {
                 if (point.y < group.getChildMiddle().y) {
                     g2.setColor(Color.red);

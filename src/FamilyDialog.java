@@ -17,7 +17,7 @@ public class FamilyDialog extends JDialog {
 
         setModal(false);
         setLocationRelativeTo(window);
-        setSize(800, 400);
+        setSize(600, 300);
         switch (type) {
             case ANCESTOR: setTitle("Vorfahren von " + panel.getName()); break;
             case DESCENDANTS: setTitle("Nachfahren von " + panel.getName());
@@ -41,12 +41,15 @@ public class FamilyDialog extends JDialog {
         JLabel newLabel = new JLabel(panel.getName());
         newLabel.setFont(new Font("Tahoma", Font.BOLD, 14));
         familyTree = new FamilyTree(newLabel);
-        fillTree(familyTree.root, relationList);
+        fillTree(familyTree.root, relationList, 0);
 
         addLabels(familyTree.root, 0, backgroundPanel.getWidth(), 0);
     }
 
-    private void fillTree(TreeNode startNode, RelationList relationList) {
+    private void fillTree(TreeNode startNode, RelationList relationList, int height) {
+        if (height > 2)
+            return;
+
         for (Relation relation : relationList.getChildRelations()) {
             switch (type) {
                 case ANCESTOR:
@@ -63,12 +66,10 @@ public class FamilyDialog extends JDialog {
                         startNode.next.add(new TreeNode(newLabel));
                     }
             }
-
-
         }
 
         for (TreeNode node : startNode.next)
-            fillTree(node, relationList);
+            fillTree(node, relationList, height + 1);
     }
 
     private void addLabels(TreeNode startNode, int startX, int width, int heightLevel) {

@@ -1,6 +1,7 @@
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.net.URL;
 
 public class TaskBarPanel extends JPanel {
     private Main main;
@@ -14,19 +15,19 @@ public class TaskBarPanel extends JPanel {
         setBackground(Color.decode("#bac7d8"));
         setBorder(new EmptyBorder(5, 5, 5, 5));
 
-        JButton newPanelButton = new JButton(new ImageIcon("newPanel.png"));
+        JButton newPanelButton = new JButton(new ImageIcon(getClass().getResource("/newPanel.png")));
         newPanelButton.addActionListener((e) -> main.newPanelDialog(10, 10));
 
-        JButton newRelationButton = new JButton(new ImageIcon("newRelation.png"));
+        JButton newRelationButton = new JButton(new ImageIcon(getClass().getResource("newRelation.png")));
         newRelationButton.addActionListener((e) -> main.newRelationDialog());
 
-        JButton deletePanelButton = new JButton(new ImageIcon("deletePanel.png"));
+        JButton deletePanelButton = new JButton(new ImageIcon(getClass().getResource("deletePanel.png")));
         deletePanelButton.addActionListener((e) -> main.deletePanelDialog());
 
-        JButton deleteRelationButton = new JButton(new ImageIcon("deleteRelation.png"));
+        JButton deleteRelationButton = new JButton(new ImageIcon(getClass().getResource("deleteRelation.png")));
         deleteRelationButton.addActionListener((e) -> main.deleteRelationDialog());
 
-        JButton navModeButton = new JButton(new ImageIcon("navmode.png"));
+        JButton navModeButton = new JButton(new ImageIcon(getClass().getResource("navmode.png")));
         navModeButton.addActionListener((e) -> main.enterNavMode());
 
         Dimension space = new Dimension(5, 5);
