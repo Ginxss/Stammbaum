@@ -55,7 +55,7 @@ public class Menu {
 
         JMenuItem menuItemNewPanel = new JMenuItem("Neue Person");
         menuItemNewPanel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
-        menuItemNewPanel.addActionListener((e) -> main.newPanelDialog(10, 10));
+        menuItemNewPanel.addActionListener((e) -> main.newPanelDialog());
 
         JMenuItem menuItemNewRelation = new JMenuItem("Neue Beziehung");
         menuItemNewRelation.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));

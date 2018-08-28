@@ -122,9 +122,7 @@ public class Main {
         return "#" + hexColor;
     }
 
-
-
-    public Panel newPanelDialog(int x, int y) {
+    public Panel newPanelDialog() {
         Point mousePos = MouseInfo.getPointerInfo().getLocation();
         Point contentPanelPos = contentPanel.getLocationOnScreen();
         int diffX = mousePos.x - contentPanelPos.x;
@@ -142,7 +140,7 @@ public class Main {
             String name = field.getText();
             if (!name.equals("")) {
                 if (diffX < 0 || diffY < 0)
-                    panel = contentPanel.newPanel(name, x, y);
+                    panel = contentPanel.newPanel(name, 10, 10);
                 else
                     panel = contentPanel.newPanel(name, mousePos.x - contentPanelPos.x, mousePos.y - contentPanelPos.y);
 
@@ -330,12 +328,7 @@ public class Main {
 
         public ContentPanelRightClickMenu() {
             newPanelItem = new JMenuItem("Neue Person");
-            newPanelItem.addActionListener((e) -> {
-                Point mouseOnScreen = MouseInfo.getPointerInfo().getLocation();
-                Point contentPanelPos = contentPanel.getLocationOnScreen();
-
-                newPanelDialog(mouseOnScreen.x - contentPanelPos.x, mouseOnScreen.y - contentPanelPos.y);
-            });
+            newPanelItem.addActionListener((e) -> newPanelDialog());
 
             newRelationItem = new JMenuItem("Neue Beziehung");
             newRelationItem.addActionListener((e) -> newRelationDialog());
