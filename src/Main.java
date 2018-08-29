@@ -80,7 +80,7 @@ public class Main {
     }
 
     public void loadSettings() {
-        File file = new File("config.txt");
+        File file = new File(".StbConfig.txt");
         if (file.exists()) {
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                 String line;
@@ -109,7 +109,7 @@ public class Main {
     }
 
     public void storeSettings() {
-        try (FileWriter fw = new FileWriter("config.txt")) {
+        try (FileWriter fw = new FileWriter(".StbConfig.txt")) {
             String s = "Antialiasing:" + String.valueOf(contentPanel.getAntilasing()) + System.lineSeparator();
             s += "Color:" + toHexString(Panel.getColor()) + System.lineSeparator();
             if (openFile != null)
@@ -238,6 +238,11 @@ public class Main {
     }
 
     private void writeToFile(File file) {
+        if (!file.exists())
+            return;
+
+        frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
         try (FileWriter fw = new FileWriter(file)) {
             fw.write("P:" + System.lineSeparator());
             for (Panel panel : contentPanel.getPanelList()) {
@@ -256,6 +261,10 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        statusPanel.getLabel().setText("Anzahl Personen: " + contentPanel.getPanelList().size() + "  |  gespeichert");
+
+        frame.setCursor(Cursor.getDefaultCursor());
     }
 
     public void openDialog() {
@@ -275,7 +284,7 @@ public class Main {
     private void loadFile(File file) {
         contentPanel.clear();
 
-        if (!file.exists()) {
+        if (file == null || !file.exists()) {
             openFile = null;
             return;
         }

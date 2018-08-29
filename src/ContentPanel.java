@@ -28,6 +28,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     private boolean takingSnapshot;
 
     private JLabel statusLabel;
+    private String statusText;
 
     public ContentPanel(JLabel statusLabel) {
         super(null);
@@ -53,10 +54,16 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         takingSnapshot = false;
 
         this.statusLabel = statusLabel;
+
+        statusText = "Anzahl Personen: " + content.getPanelList().size();
     }
 
     public void updateStatus() {
-        statusLabel.setText("Anzahl Personen: " + String.valueOf(content.getPanelList().size()));
+        statusLabel.setText(statusText);
+    }
+
+    public void updateStatusText() {
+        statusText = "Anzahl Personen: " + content.getPanelList().size();
     }
 
     public Content getContent() {
@@ -87,7 +94,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
             ActionStack.addPanelAction(true, name, new Point(x, y));
 
-            updateStatus();
+            updateStatusText();
         }
         return panel;
     }
@@ -114,7 +121,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         boolean result = content.deletePanel(i);
         updateChildParentGroups();
 
-        updateStatus();
+        updateStatusText();
 
         return result;
     }
@@ -133,7 +140,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         boolean result = content.deletePanel(name);
         updateChildParentGroups();
 
-        updateStatus();
+        updateStatusText();
 
         return result;
     }
@@ -329,7 +336,10 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             g2.setColor(Color.black);
             g2.drawLine(0, 0, 0, getHeight());
             g2.drawLine(getWidth() - 1,  0, getWidth() - 1, getHeight());
+
+            updateStatus();
         }
+
     }
 
     private void drawRelations(Graphics2D g2) {
@@ -348,7 +358,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                     g2.setColor(Color.red);
                     g2.setStroke(new BasicStroke(2));
                 }
-                g2.drawLine(point.x, point.y, point.x, group.getChildMiddle().y);
+                g2.drawLine(point.x, point.y + 1, point.x, group.getChildMiddle().y);
 
                 if (g2.getColor() != Color.black) {
                     g2.setColor(Color.black);
