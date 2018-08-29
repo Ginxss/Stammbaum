@@ -30,13 +30,18 @@ public class Menu {
 
         JMenuItem menuItemSave = new JMenuItem("Speichern");
         menuItemSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
-        menuItemSave.addActionListener((e) -> main.saveDialog());
+        menuItemSave.addActionListener((e) -> main.save());
+
+        JMenuItem menuItemSaveAs = new JMenuItem("Speichern unter");
+        menuItemSaveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK + KeyEvent.SHIFT_DOWN_MASK));
+        menuItemSaveAs.addActionListener((e) -> main.saveDialog());
 
         JMenuItem menuItemOpen = new JMenuItem("Öffnen");
         menuItemOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
         menuItemOpen.addActionListener((e) -> main.openDialog());
 
         fileMenu.add(menuItemSave);
+        fileMenu.add(menuItemSaveAs);
         fileMenu.add(menuItemOpen);
 
         return fileMenu;

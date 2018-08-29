@@ -168,10 +168,10 @@ public class ChildParentGroup {
     public String toString() {
         String s = "Kinder: ";
         for (Panel panel : children)
-            s += panel.getName() + " ";
+            s += panel.getPanelName() + " ";
         s += "| von Eltern: ";
         for (Panel panel : parents)
-            s += panel.getName() + " ";
+            s += panel.getPanelName() + " ";
 
         return s;
     }

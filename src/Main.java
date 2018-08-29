@@ -26,6 +26,12 @@ public class Main {
     }
 
     public Main() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | UnsupportedLookAndFeelException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
         initWindow();
 
         loadSettings();
@@ -220,22 +226,35 @@ public class Main {
             if (!fileChooser.getSelectedFile().getName().endsWith(".stb"))
                 fileChooser.setSelectedFile(new File(fileChooser.getSelectedFile().getPath()+".stb"));
 
-            try (FileWriter fw = new FileWriter(fileChooser.getSelectedFile())) {
-                fw.write("P:" + System.lineSeparator());
-                for (Panel panel : contentPanel.getPanelList()) {
-                    fw.append(panel.getName()).append(System.lineSeparator());
-                    fw.append(String.valueOf(panel.getX())).append(System.lineSeparator());
-                    fw.append(String.valueOf(panel.getY())).append(System.lineSeparator());
-                }
+            writeToFile(fileChooser.getSelectedFile());
+        }
+    }
 
-                fw.write("R:" + System.lineSeparator());
-                for (Relation relation : contentPanel.getRelationList().getAllRelations()) {
-                    fw.append(relation.srcPanel.getName()).append(System.lineSeparator());
-                    fw.append(relation.targetPanel.getName()).append(System.lineSeparator());
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+    public void save() {
+        if (openFile == null)
+            saveDialog();
+        else
+            writeToFile(openFile);
+    }
+
+    private void writeToFile(File file) {
+        try (FileWriter fw = new FileWriter(file)) {
+            fw.write("P:" + System.lineSeparator());
+            for (Panel panel : contentPanel.getPanelList()) {
+                fw.append(panel.getPanelName()).append(System.lineSeparator());
+                fw.append(String.valueOf(panel.getX())).append(System.lineSeparator());
+                fw.append(String.valueOf(panel.getY())).append(System.lineSeparator());
             }
+
+            fw.write("R:" + System.lineSeparator());
+            for (Relation relation : contentPanel.getRelationList().getAllRelations()) {
+                fw.append(relation.srcPanel.getPanelName()).append(System.lineSeparator());
+                fw.append(relation.targetPanel.getPanelName()).append(System.lineSeparator());
+            }
+
+            openFile = file;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -255,6 +274,11 @@ public class Main {
 
     private void loadFile(File file) {
         contentPanel.clear();
+
+        if (!file.exists()) {
+            openFile = null;
+            return;
+        }
 
         int state = -1; // 0 = panels, 1 = relations
 

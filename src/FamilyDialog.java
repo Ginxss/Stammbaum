@@ -19,8 +19,8 @@ public class FamilyDialog extends JDialog {
         setLocationRelativeTo(window);
         setSize(600, 300);
         switch (type) {
-            case ANCESTOR: setTitle("Vorfahren von " + panel.getName()); break;
-            case DESCENDANTS: setTitle("Nachfahren von " + panel.getName());
+            case ANCESTOR: setTitle("Vorfahren von " + panel.getPanelName()); break;
+            case DESCENDANTS: setTitle("Nachfahren von " + panel.getPanelName());
         }
 
         backgroundPanel = new JPanel(null)  {
@@ -38,7 +38,7 @@ public class FamilyDialog extends JDialog {
         getContentPane().add(backgroundPanel);
         setVisible(true);
 
-        JLabel newLabel = new JLabel(panel.getName());
+        JLabel newLabel = new JLabel(panel.getPanelName());
         newLabel.setFont(new Font("Tahoma", Font.BOLD, 14));
         familyTree = new FamilyTree(newLabel);
         fillTree(familyTree.root, relationList, 0);
@@ -53,15 +53,15 @@ public class FamilyDialog extends JDialog {
         for (Relation relation : relationList.getChildRelations()) {
             switch (type) {
                 case ANCESTOR:
-                    if (relation.srcPanel.getName().equals(startNode.data.getText())) {
-                        JLabel newLabel = new JLabel(relation.targetPanel.getName());
+                    if (relation.srcPanel.getPanelName().equals(startNode.data.getText())) {
+                        JLabel newLabel = new JLabel(relation.targetPanel.getPanelName());
                         newLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
                         startNode.next.add(new TreeNode(newLabel));
                     }
                     break;
                 case DESCENDANTS:
-                    if (relation.targetPanel.getName().equals(startNode.data.getText())) {
-                        JLabel newLabel = new JLabel(relation.srcPanel.getName());
+                    if (relation.targetPanel.getPanelName().equals(startNode.data.getText())) {
+                        JLabel newLabel = new JLabel(relation.srcPanel.getPanelName());
                         newLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
                         startNode.next.add(new TreeNode(newLabel));
                     }

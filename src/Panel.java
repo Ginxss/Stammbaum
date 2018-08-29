@@ -20,7 +20,7 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
     private static Color fontColor = Color.black;
     private static Color color = Color.decode("#efd667");
 
-    public Panel(String name, int x, int y) {
+    public Panel(String panelName, int x, int y) {
         setBackground(color);
         addMouseListener(this);
         addMouseMotionListener(this);
@@ -31,14 +31,14 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
         entered = false;
         selected = false;
 
-        text = new JLabel(name);
+        text = new JLabel(panelName);
         text.setFont(font);
         text.setForeground(fontColor);
 
         groups = new LinkedList<>();
 
         FontMetrics fm = text.getFontMetrics(font);
-        int width = fm.stringWidth(name);
+        int width = fm.stringWidth(panelName);
         int height = fm.getHeight();
         setBounds(x, y, width + 10, height + 10);
 
@@ -68,15 +68,15 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
         text.setForeground(fontColor);
     }
 
-    public String getName() {
+    public String getPanelName() {
         return text.getText();
     }
 
-    public void setName(String name) {
-        text.setText(name);
+    public void setPanelName(String panelName) {
+        text.setText(panelName);
 
         FontMetrics fm = text.getFontMetrics(font);
-        int width = fm.stringWidth(name);
+        int width = fm.stringWidth(panelName);
         int height = fm.getHeight();
         setBounds(getX(), getY(), width + 10, height + 10);
     }

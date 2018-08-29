@@ -42,7 +42,7 @@ public class RelationList {
     public boolean remove(String srcName, String targetName, Relation.Type type) {
         for (int i = allRelations.size() - 1; i >= 0; i--) {
             Relation relation = allRelations.get(i);
-            if (relation.srcPanel.getName().equals(srcName) && relation.targetPanel.getName().equals(targetName) && relation.type == type) {
+            if (relation.srcPanel.getPanelName().equals(srcName) && relation.targetPanel.getPanelName().equals(targetName) && relation.type == type) {
                 remove(relation);
                 return true;
             }
@@ -73,7 +73,7 @@ public class RelationList {
             if (relation.srcPanel == panel || relation.targetPanel == panel) {
                 remove(relation);
 
-                ActionStack.appendRelationAction(false, relation.srcPanel.getName(), relation.targetPanel.getName(), relation.type);
+                ActionStack.appendRelationAction(false, relation.srcPanel.getPanelName(), relation.targetPanel.getPanelName(), relation.type);
             }
         }
     }

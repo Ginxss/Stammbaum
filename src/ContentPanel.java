@@ -100,15 +100,15 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         Relation relation = content.newRelation(srcPanel, targetPanel, type);
         updateChildParentGroups();
 
-        ActionStack.addRelationAction(true, srcPanel.getName(), targetPanel.getName(), type);
+        ActionStack.addRelationAction(true, srcPanel.getPanelName(), targetPanel.getPanelName(), type);
         return relation;
     }
 
     public boolean deletePanel(int i, boolean appendAction) {
         if (appendAction)
-            ActionStack.appendPanelAction(false, content.getPanel(i).getName(), content.getPanel(i).getLocation());
+            ActionStack.appendPanelAction(false, content.getPanel(i).getPanelName(), content.getPanel(i).getLocation());
         else
-            ActionStack.addPanelAction(false, content.getPanel(i).getName(), content.getPanel(i).getLocation());
+            ActionStack.addPanelAction(false, content.getPanel(i).getPanelName(), content.getPanel(i).getLocation());
 
         remove(content.getPanel(i));
         boolean result = content.deletePanel(i);
@@ -591,12 +591,12 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         public PanelRightClickMenu(Panel panel) {
             deletePanel = new JMenuItem("Löschen");
             deletePanel.addActionListener((e) -> {
-                deletePanel(panel.getName());
+                deletePanel(panel.getPanelName());
                 ContentPanel.this.repaint();
             });
 
             renamePanel = new JMenuItem("Umbenennen");
-            renamePanel.addActionListener((e) -> renamePanelDialog(panel.getName()));
+            renamePanel.addActionListener((e) -> renamePanelDialog(panel.getPanelName()));
 
             displayAncestors = new JMenuItem("Vorfahren anzeigen");
             displayAncestors.addActionListener((e) -> {

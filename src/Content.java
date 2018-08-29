@@ -29,7 +29,7 @@ public class Content {
 
     public Panel getPanel(String name) {
         for (Panel panel : panelList)
-            if (panel.getName().equals(name))
+            if (panel.getPanelName().equals(name))
                 return panel;
         return null;
     }
@@ -83,7 +83,7 @@ public class Content {
         Panel panel = getPanel(oldName);
         if (panel != null)
             if (!nameExists(newName)) {
-                panel.setName(newName);
+                panel.setPanelName(newName);
                 return true;
             }
         return false;
@@ -100,7 +100,7 @@ public class Content {
 
     public boolean nameExists(String name) {
         for (Panel panel : panelList)
-            if (panel.getName().equals(name))
+            if (panel.getPanelName().equals(name))
                 return true;
         return false;
     }
