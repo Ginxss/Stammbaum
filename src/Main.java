@@ -17,8 +17,6 @@ public class Main {
 
     private StatusPanel statusPanel;
 
-    private ActionStack actionStack;
-
     private File openFile;
 
     public static void main(String[] args) {
@@ -62,9 +60,9 @@ public class Main {
         contentPanel.setComponentPopupMenu(new ContentPanelRightClickMenu());
         navModePanel = new NavModePanel();
 
-        actionStack = new ActionStack(contentPanel);
+        ActionStack.init(contentPanel);
 
-        menu = new Menu(this, frame, contentPanel, actionStack);
+        menu = new Menu(this, frame, contentPanel);
 
         openFile = null;
     }
@@ -169,16 +167,11 @@ public class Main {
 
         int option = JOptionPane.showConfirmDialog(frame, inputs, "Neue Beziehung", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
-            Panel srcPanel = contentPanel.getPanel(srcField.getText());
-            Panel targetPanel = contentPanel.getPanel(targetField.getText());
-            if (srcPanel != null && targetPanel != null) {
-                if (relationTypes.getSelectedItem() == "ist Kind von") {
-                    contentPanel.newRelation(srcPanel, targetPanel, Relation.Type.CHILD);
+            if (relationTypes.getSelectedItem() == "ist Kind von")
+                contentPanel.newRelation(srcField.getText(), targetField.getText(), Relation.Type.CHILD);
 
-                    contentPanel.repaint();
-                    contentPanel.revalidate();
-                }
-            }
+            contentPanel.repaint();
+            contentPanel.revalidate();
         }
     }
 
@@ -289,9 +282,9 @@ public class Main {
             return;
         }
 
-        int state = -1; // 0 = panels, 1 = relations
-
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            int state = -1; // 0 = panels, 1 = relations
+
             String line;
             while (true) {
                 line = br.readLine();
@@ -326,7 +319,8 @@ public class Main {
             }
 
             openFile = file;
-            actionStack.clear();
+            ActionStack.clear();
+
         } catch (IOException e) {
             e.printStackTrace();
         }

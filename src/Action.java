@@ -8,11 +8,13 @@ class PanelAction implements Action {
     public boolean add;
     public String object;
     public Point position;
+    public Point diff;
 
     public PanelAction(boolean add, String object, Point position) {
         this.add = add;
         this.object = object;
         this.position = position;
+        diff = new Point();
     }
 
     public String getType() {

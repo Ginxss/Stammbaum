@@ -66,6 +66,10 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         statusText = "Anzahl Personen: " + content.getPanelList().size();
     }
 
+    public boolean getAntilasing() {
+        return antialiasing;
+    }
+
     public Content getContent() {
         return content;
     }
@@ -78,12 +82,12 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         return content.getRelationList();
     }
 
-    public Panel getPanel(String name) {
-        return content.getPanel(name);
+    public Panel getPanel(int i) {
+        return content.getPanel(i);
     }
 
-    public boolean getAntilasing() {
-        return antialiasing;
+    public Panel getPanel(String name) {
+        return content.getPanel(name);
     }
 
     public Panel newPanel(String name, int x, int y) {
@@ -103,12 +107,24 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         panel.setComponentPopupMenu(new PanelRightClickMenu(panel));
     }
 
+    public Relation newRelation(String srcName, String targetName, Relation.Type type) {
+        Relation relation = content.newRelation(srcName, targetName, type);
+        updateChildParentGroups();
+
+        ActionStack.addRelationAction(true, srcName, targetName, type);
+        return relation;
+    }
+
     public Relation newRelation(Panel srcPanel, Panel targetPanel, Relation.Type type) {
         Relation relation = content.newRelation(srcPanel, targetPanel, type);
         updateChildParentGroups();
 
         ActionStack.addRelationAction(true, srcPanel.getPanelName(), targetPanel.getPanelName(), type);
         return relation;
+    }
+
+    public boolean deletePanel(int i) {
+        return deletePanel(i, false);
     }
 
     public boolean deletePanel(int i, boolean appendAction) {
@@ -119,8 +135,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
         remove(content.getPanel(i));
         boolean result = content.deletePanel(i);
-        updateChildParentGroups();
 
+        updateChildParentGroups();
         updateStatusText();
 
         return result;
@@ -138,8 +154,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
         remove(content.getPanel(name));
         boolean result = content.deletePanel(name);
-        updateChildParentGroups();
 
+        updateChildParentGroups();
         updateStatusText();
 
         return result;
@@ -153,19 +169,28 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         return result;
     }
 
+    public boolean deleteRelation(Panel srcPanel, Panel targetPanel, Relation.Type type) {
+        boolean result = content.deleteRelation(srcPanel, targetPanel, type);
+        updateChildParentGroups();
+
+        ActionStack.addRelationAction(false, srcPanel.getPanelName(), targetPanel.getPanelName(), type);
+        return result;
+    }
+
     public void deleteSelected() {
         content.updateSelectedPanels();
+
+        boolean firstIteration = true;
         for (int i = content.getSelectedPanels().size() - 1; i >= 0; i--) {
             int pos = content.getSelectedPanels().get(i);
 
-            if (i == content.getSelectedPanels().size() - 1)
-                deletePanel(pos, false);
-            else
-                deletePanel(pos, true);
+            if (firstIteration) deletePanel(pos, false);
+            else deletePanel(pos, true);
+
+            firstIteration = false;
         }
 
         repaint();
-        revalidate();
     }
 
     public void clear() {
@@ -174,9 +199,7 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         deleteSelected();
 
         content.getSelectedPanels().clear();
-        updateChildParentGroups();
-
-        repaint();
+        groups.clear();
     }
 
     public void searchFor(String name) {
@@ -196,12 +219,10 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
     public BufferedImage takeSnapShot() {
         takingSnapshot = true;
         boolean orgAntialiasing = antialiasing;
-        antialiasing = true;
 
         int minX = Integer.MAX_VALUE;
         int minY = Integer.MAX_VALUE;
         LinkedList<Point> orgPos = new LinkedList<>();
-
         for (Panel panel : content.getPanelList()) {
             orgPos.add(panel.getLocation());
 
@@ -210,7 +231,6 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             if (panel.getY() < minY)
                 minY = panel.getY();
         }
-
         for (Panel panel : content.getPanelList())
             panel.setLocation(panel.getX() - minX, panel.getY() - minY);
         for (ChildParentGroup group : groups)
@@ -229,7 +249,6 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
         setSize(maxWidth, maxHeight);
 
         BufferedImage img = new BufferedImage(maxWidth, maxHeight, BufferedImage.TYPE_INT_RGB);
-
         paint(img.createGraphics());
 
         antialiasing = orgAntialiasing;
@@ -267,21 +286,18 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
         for (Relation relation : content.getRelationList().getChildRelations()) {
             if (!usedChildRelations.contains(relation)) {
-                Panel c = relation.srcPanel;
+                Panel child = relation.srcPanel;
                 Collection<Panel> parents = new LinkedList<>();
                 parents.add(relation.targetPanel);
 
                 for (Relation relation1 : content.getRelationList().getChildRelations()) {
-                    if (relation != relation1) {
-                        if (relation.srcPanel == relation1.srcPanel) {
-                            parents.add(relation1.targetPanel);
-                            usedChildRelations.add(relation1);
-                        }
+                    if (relation != relation1 && relation.srcPanel == relation1.srcPanel) {
+                        parents.add(relation1.targetPanel);
+                        usedChildRelations.add(relation1);
                     }
                 }
 
-                ChildParentGroup group = new ChildParentGroup(c, parents);
-                groups.add(group);
+                groups.add(new ChildParentGroup(child, parents));
             }
         }
 
@@ -320,14 +336,16 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
         Graphics2D g2 = (Graphics2D)g;
 
-        Object ant = (antialiasing) ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, ant);
-
         if (takingSnapshot) {
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
             g2.setStroke(new BasicStroke(2));
             drawRelations(g2);
         }
         else {
+            Object ant = (antialiasing) ? RenderingHints.VALUE_ANTIALIAS_ON : RenderingHints.VALUE_ANTIALIAS_OFF;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, ant);
+
             g2.setStroke(new BasicStroke(1));
             drawRelations(g2);
             drawSelectionRectangle(g2);
@@ -339,16 +357,35 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
             updateStatus();
         }
-
     }
 
     private void drawRelations(Graphics2D g2) {
         for (ChildParentGroup group : groups) {
-            g2.setColor(Color.green.darker());
-            for (Point point : group.getParentNodes()) {
-                g2.drawLine(point.x, point.y, point.x, group.getParentMiddle().y);
-                g2.drawLine(point.x, group.getParentMiddle().y, group.getParentMiddle().x, group.getParentMiddle().y);
+            int minChildrenX = Integer.MAX_VALUE;
+            int maxChildrenX = Integer.MIN_VALUE;
+            for (Panel panel : group.getChildren()) {
+                int x = panel.getX() + panel.getWidth() / 2;
+                if (x < minChildrenX)
+                    minChildrenX = x;
+                if (x > maxChildrenX)
+                    maxChildrenX = x;
             }
+
+            int minParentsX = Integer.MAX_VALUE;
+            int maxParentsX = Integer.MIN_VALUE;
+            for (Panel panel : group.getParents()) {
+                int x = panel.getX() + panel.getWidth() / 2;
+                if (x < minParentsX)
+                    minParentsX = x;
+                if (x > maxParentsX)
+                    maxParentsX = x;
+            }
+
+            g2.setColor(Color.green.darker());
+            g2.setStroke(new BasicStroke(1));
+            for (Point point : group.getParentNodes())
+                g2.drawLine(point.x, point.y, point.x, group.getParentMiddle().y);
+            g2.drawLine(minParentsX, group.getParentMiddle().y, maxParentsX, group.getParentMiddle().y);
 
             g2.drawLine(group.getParentMiddle().x, group.getParentMiddle().y, group.getChildMiddle().x, group.getChildMiddle().y);
 
@@ -358,14 +395,13 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                     g2.setColor(Color.red);
                     g2.setStroke(new BasicStroke(2));
                 }
-                g2.drawLine(point.x, point.y + 1, point.x, group.getChildMiddle().y);
-
-                if (g2.getColor() != Color.black) {
+                else {
                     g2.setColor(Color.black);
                     g2.setStroke(new BasicStroke(1));
                 }
-                g2.drawLine(point.x, group.getChildMiddle().y, group.getChildMiddle().x, group.getChildMiddle().y);
+                g2.drawLine(point.x, point.y + 1, point.x, group.getChildMiddle().y);
             }
+            g2.drawLine(minChildrenX, group.getChildMiddle().y, maxChildrenX, group.getChildMiddle().y);
         }
     }
 
@@ -446,7 +482,6 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
             initialMousePos.x = e.getXOnScreen();
             initialMousePos.y = e.getYOnScreen();
 
-            // Aus Performancegünden werden die bereits vorhandenen Positionen nur bearbeitet.
             for (int i = 0; i < content.getPanelList().size(); i++) {
                 if (i < panelPositions.size()) {
                     panelPositions.get(i).x = content.getPanel(i).getX();
@@ -457,10 +492,10 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                 }
             }
 
-            content.updateSelectedPanels();
-
             for (ChildParentGroup group : groups)
                 group.setOrgPositions();
+
+            content.updateSelectedPanels();
         }
         else if (SwingUtilities.isLeftMouseButton(e)) {
             if (!creatingRelation) {
@@ -479,10 +514,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
                     int middleX = panel.getX() + panel.getWidth() / 2;
                     int middleY = panel.getY() + panel.getHeight() / 2;
 
-                    if (middleX > normedSelectionRectangle.x && middleX < normedSelectionRectangle.x + normedSelectionRectangle.width &&
-                        middleY > normedSelectionRectangle.y && middleY < normedSelectionRectangle.y + normedSelectionRectangle.height) {
+                    if (normedSelectionRectangle.contains(middleX, middleY))
                         panel.select();
-                    }
                 }
             }
 
@@ -511,6 +544,8 @@ public class ContentPanel extends JPanel implements MouseListener, MouseMotionLi
 
                 for (ChildParentGroup group : groups)
                     group.applyDiff(diffX, diffY);
+
+                ActionStack.applyDiff(diffX, diffY);
             }
             else {
                 LinkedList<ChildParentGroup> groupsToUpdate = new LinkedList<>();

@@ -44,7 +44,7 @@ public class Content {
     }
 
     public Relation newRelation(Panel srcPanel, Panel targetPanel, Relation.Type type) {
-        if (!relationList.hasRelation(srcPanel, targetPanel, type)) {
+        if (srcPanel != null && targetPanel != null && !relationList.hasRelation(srcPanel, targetPanel, type)) {
             Relation relation = new Relation(srcPanel, targetPanel, type);
             relationList.add(relation);
             return relation;
@@ -59,14 +59,14 @@ public class Content {
     }
 
     public boolean deletePanel(int i) {
-        return delete_panel(getPanel(i));
+        return deletePanel(getPanel(i));
     }
 
     public boolean deletePanel(String name) {
-        return delete_panel(getPanel(name));
+        return deletePanel(getPanel(name));
     }
 
-    private boolean delete_panel(Panel panel) {
+    public boolean deletePanel(Panel panel) {
         if (panel != null) {
             relationList.removeRelationsWith(panel);
             panelList.remove(panel);
@@ -77,6 +77,10 @@ public class Content {
 
     public boolean deleteRelation(String srcName, String targetName, Relation.Type type) {
         return relationList.remove(srcName, targetName, type);
+    }
+
+    public boolean deleteRelation(Panel srcPanel, Panel targetPanel, Relation.Type type) {
+        return relationList.remove(srcPanel, targetPanel, type);
     }
 
     public boolean renamePanel(String oldName, String newName) {

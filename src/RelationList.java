@@ -18,15 +18,14 @@ public class RelationList {
     }
 
     public boolean add(Relation relation) {
-        if (hasRelation(relation.srcPanel, relation.targetPanel, relation.type))
-            return false;
+        if (!hasRelation(relation.srcPanel, relation.targetPanel, relation.type)) {
+            allRelations.add(relation);
+            if (relation.type == Relation.Type.CHILD)
+                childRelations.add(relation);
 
-        allRelations.add(relation);
-
-        if (relation.type == Relation.Type.CHILD)
-            childRelations.add(relation);
-
-        return true;
+            return true;
+        }
+        return false;
     }
 
     public void remove(Relation relation) {
@@ -40,8 +39,7 @@ public class RelationList {
     }
 
     public boolean remove(String srcName, String targetName, Relation.Type type) {
-        for (int i = allRelations.size() - 1; i >= 0; i--) {
-            Relation relation = allRelations.get(i);
+        for (Relation relation : allRelations) {
             if (relation.srcPanel.getPanelName().equals(srcName) && relation.targetPanel.getPanelName().equals(targetName) && relation.type == type) {
                 remove(relation);
                 return true;
@@ -50,9 +48,14 @@ public class RelationList {
         return false;
     }
 
-    public void clear() {
-        allRelations.clear();
-        childRelations.clear();
+    public boolean remove(Panel srcPanel, Panel targetPanel, Relation.Type type) {
+        for (Relation relation : allRelations) {
+            if (relation.srcPanel == srcPanel && relation.targetPanel == targetPanel && relation.type == type) {
+                remove(relation);
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean hasRelation(Panel srcPanel, Panel targetPanel, Relation.Type type) {

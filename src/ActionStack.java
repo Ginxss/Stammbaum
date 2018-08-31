@@ -65,12 +65,12 @@ class StackElement {
 }
 
 public class ActionStack {
-    private ContentPanel contentPanel;
+    private static ContentPanel contentPanel;
     private static StackElement head;
 
-    public ActionStack(ContentPanel contentPanel) {
-        this.contentPanel = contentPanel;
-        head = new StackElement(null, null, null);
+    public static void init(ContentPanel contentPanel) {
+        ActionStack.contentPanel = contentPanel;
+        ActionStack.head = new StackElement(null, null, null);
     }
 
     public static void addPanelAction(boolean add, String name, Point pos) {
@@ -108,7 +108,7 @@ public class ActionStack {
         head = head.above;
     }
 
-    public void undo() {
+    public static void undo() {
         if (head.below == null)
             return;
 
@@ -125,7 +125,7 @@ public class ActionStack {
                     contentPanel.updateChildParentGroups();
                 }
                 else {
-                    Panel panel = contentPanel.getContent().newPanel(pAction.object, pAction.position.x, pAction.position.y);
+                    Panel panel = contentPanel.getContent().newPanel(pAction.object, pAction.position.x + pAction.diff.x, pAction.position.y + pAction.diff.y);
                     contentPanel.addMenu(panel);
                     contentPanel.add(panel);
                 }
@@ -154,7 +154,7 @@ public class ActionStack {
         contentPanel.revalidate();
     }
 
-    public void redo() {
+    public static void redo() {
         if (head.above == null)
             return;
 
@@ -166,7 +166,7 @@ public class ActionStack {
             if (action.getType().equals("Panel")) {
                 PanelAction pAction = (PanelAction)action;
                 if (pAction.add) {
-                    Panel panel = contentPanel.getContent().newPanel(pAction.object, pAction.position.x, pAction.position.y);
+                    Panel panel = contentPanel.getContent().newPanel(pAction.object, pAction.position.x + pAction.diff.x, pAction.position.y + pAction.diff.y);
                     contentPanel.addMenu(panel);
                     contentPanel.add(panel);
                 }
@@ -200,7 +200,24 @@ public class ActionStack {
         contentPanel.revalidate();
     }
 
-    public void clear() {
+    public static void applyDiff(int diffX, int diffY) {
+        StackElement element = head;
+        while (element.above != null)
+            element = element.above;
+
+        while (element.below != null) {
+            for (Action action : element.data) {
+                if (action.getType().equals("Panel")) {
+                    PanelAction pAction = (PanelAction)action;
+                    pAction.diff = new Point(diffX, diffY);
+                }
+            }
+
+            element = element.below;
+        }
+    }
+
+    public static void clear() {
         head = new StackElement(null, null, null);
     }
 }

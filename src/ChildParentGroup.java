@@ -85,6 +85,28 @@ public class ChildParentGroup {
         updateChildNodes();
     }
 
+    private void updateParentNodes() {
+        parentNodes.clear();
+        parentMiddle.x = 0;
+        parentMiddle.y = Integer.MIN_VALUE;
+        int i = 0;
+        for (Panel panel : parents) {
+            int parentX = panel.getX() + panel.getWidth() / 2;
+            int parentY = panel.getY() + panel.getHeight();
+            parentNodes.add(new Point(parentX, parentY));
+
+            parentMiddle.x += parentX;
+            i++;
+
+            if (parentY > parentMiddle.y)
+                parentMiddle.y = parentY;
+        }
+        parentMiddle.x /= i;
+
+        if (parents.size() > 1)
+            parentMiddle.y += 20;
+    }
+
     private void updateChildNodes() {
         childNodes.clear();
         childMiddle.x = 0;
@@ -109,29 +131,6 @@ public class ChildParentGroup {
         if (children.size() > 1)
             childMiddle.y -= 20;
     }
-
-    private void updateParentNodes() {
-        parentNodes.clear();
-        parentMiddle.x = 0;
-        parentMiddle.y = Integer.MIN_VALUE;
-        int i = 0;
-        for (Panel panel : parents) {
-            int parentX = panel.getX() + panel.getWidth() / 2;
-            int parentY = panel.getY() + panel.getHeight();
-            parentNodes.add(new Point(parentX, parentY));
-
-            parentMiddle.x += parentX;
-            i++;
-
-            if (parentY > parentMiddle.y)
-                parentMiddle.y = parentY;
-        }
-        parentMiddle.x /= i;
-
-        if (parents.size() > 1)
-            parentMiddle.y += 20;
-    }
-
 
     public void setOrgPositions() {
         orgChildNodes.clear();

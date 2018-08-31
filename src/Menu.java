@@ -6,16 +6,14 @@ public class Menu {
     private Main main;
     private JFrame frame;
     private ContentPanel contentPanel;
-    private ActionStack actionStack;
 
     private JMenuBar menuBar;
     public JCheckBoxMenuItem checkboxAntialiasing;
 
-    public Menu(Main main, JFrame frame, ContentPanel contentPanel, ActionStack actionStack) {
+    public Menu(Main main, JFrame frame, ContentPanel contentPanel) {
         this.main = main;
         this.frame = frame;
         this.contentPanel = contentPanel;
-        this.actionStack = actionStack;
 
         menuBar = new JMenuBar();
         menuBar.add(createFileMenu());
@@ -52,11 +50,11 @@ public class Menu {
 
         JMenuItem menuItemUndo = new JMenuItem("Rückgängig");
         menuItemUndo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK));
-        menuItemUndo.addActionListener((e) -> actionStack.undo());
+        menuItemUndo.addActionListener((e) -> ActionStack.undo());
 
         JMenuItem menuItemRedo = new JMenuItem("Wiederholen");
         menuItemRedo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK));
-        menuItemRedo.addActionListener((e) -> actionStack.redo());
+        menuItemRedo.addActionListener((e) -> ActionStack.redo());
 
         JMenuItem menuItemNewPanel = new JMenuItem("Neue Person");
         menuItemNewPanel.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
