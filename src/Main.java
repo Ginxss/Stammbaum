@@ -213,6 +213,10 @@ public class Main {
         FileNameExtensionFilter fileFilter = new FileNameExtensionFilter(".stb - Stammbaum Speicherdateien", "stb");
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(fileFilter);
+        if (openFile != null)
+            fileChooser.setCurrentDirectory(openFile);
+
+        System.out.println(openFile);
 
         int option = fileChooser.showSaveDialog(frame);
         if (option == JFileChooser.APPROVE_OPTION) {
@@ -231,9 +235,6 @@ public class Main {
     }
 
     private void writeToFile(File file) {
-        if (!file.exists())
-            return;
-
         frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         try (FileWriter fw = new FileWriter(file)) {
@@ -264,6 +265,8 @@ public class Main {
         FileNameExtensionFilter fileFilter = new FileNameExtensionFilter(".stb - Stammbaum Speicherdateien", "stb");
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileFilter(fileFilter);
+        if (openFile != null)
+            fileChooser.setCurrentDirectory(openFile);
 
         int option = fileChooser.showOpenDialog(frame);
         if (option == JFileChooser.APPROVE_OPTION) {
