@@ -256,6 +256,8 @@ public class Main {
             e.printStackTrace();
         }
 
+        storeSettings();
+
         statusPanel.getLabel().setText("Anzahl Personen: " + contentPanel.getPanelList().size() + "  |  gespeichert");
 
         frame.setCursor(Cursor.getDefaultCursor());
