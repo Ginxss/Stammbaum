@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.util.LinkedList;
 
+// TODO: Bug, wenn wiederherzustellende Panels außerhalb des ContentPanels sind.
 class StackElement {
     public LinkedList<Action> data;
     public StackElement below;
