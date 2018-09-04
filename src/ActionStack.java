@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.util.LinkedList;
 
-// TODO: Bug, wenn wiederherzustellende Panels außerhalb des ContentPanels sind.
 class StackElement {
     public LinkedList<Action> data;
     public StackElement below;
@@ -121,12 +120,14 @@ public class ActionStack {
                 if (pAction.add) {
                     Panel panel = contentPanel.getContent().getPanel(pAction.object);
                     pAction.position = panel.getLocation();
+                    pAction.diff.x = 0; pAction.diff.y = 0;
                     contentPanel.remove(panel);
                     contentPanel.getContent().deletePanel(pAction.object);
                     contentPanel.updateChildParentGroups();
                 }
                 else {
                     Panel panel = contentPanel.getContent().newPanel(pAction.object, pAction.position.x + pAction.diff.x, pAction.position.y + pAction.diff.y);
+                    pAction.diff.x = 0; pAction.diff.y = 0;
                     contentPanel.addMenu(panel);
                     contentPanel.add(panel);
                 }
@@ -168,12 +169,14 @@ public class ActionStack {
                 PanelAction pAction = (PanelAction)action;
                 if (pAction.add) {
                     Panel panel = contentPanel.getContent().newPanel(pAction.object, pAction.position.x + pAction.diff.x, pAction.position.y + pAction.diff.y);
+                    pAction.diff.x = 0; pAction.diff.y = 0;
                     contentPanel.addMenu(panel);
                     contentPanel.add(panel);
                 }
                 else {
                     Panel panel = contentPanel.getContent().getPanel(pAction.object);
                     pAction.position = panel.getLocation();
+                    pAction.diff.x = 0; pAction.diff.y = 0;
                     contentPanel.remove(panel);
                     contentPanel.getContent().deletePanel(pAction.object);
                     contentPanel.updateChildParentGroups();
