@@ -13,6 +13,7 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
     private boolean selected;
 
     private JLabel text;
+    private String notes;
 
     private LinkedList<ChildParentGroup> groups;
 
@@ -66,6 +67,14 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
     public void updateColor() {
         setBackground(color);
         text.setForeground(fontColor);
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public String getNotes() {
+        return notes;
     }
 
     public String getPanelName() {
@@ -136,15 +145,16 @@ public class Panel extends JPanel implements MouseListener, MouseMotionListener 
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        if (e.getClickCount() >= 2)
+            new PanelNotesWindow(this);
+
         if (ContentPanel.creatingRelation) {
-            Component source = (Component)e.getSource();
+            Component source = (Component) e.getSource();
             source.getParent().dispatchEvent(e);
         }
         else {
-            if (!selected)
-                select();
-            else
-                unselect();
+            if (!selected) select();
+            else unselect();
         }
         repaint();
     }

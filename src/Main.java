@@ -251,6 +251,15 @@ public class Main {
                 fw.append(relation.targetPanel.getPanelName()).append(System.lineSeparator());
             }
 
+            fw.write("N:" + System.lineSeparator());
+            for (Panel panel : contentPanel.getPanelList()) {
+                if (panel.getNotes() != null) {
+                    fw.append(panel.getPanelName()).append(System.lineSeparator());
+                    fw.append(panel.getNotes()).append(System.lineSeparator());
+                    fw.append("__ENDNOTES__").append(System.lineSeparator());
+                }
+            }
+
             openFile = file;
         } catch (IOException e) {
             e.printStackTrace();
@@ -288,7 +297,7 @@ public class Main {
         }
 
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            int state = -1; // 0 = panels, 1 = relations
+            int state = -1; // 0 = panels, 1 = relations, 2 = notes
 
             String line;
             while (true) {
@@ -302,6 +311,10 @@ public class Main {
                 }
                 else if (line.equals("R:")) {
                     state = 1;
+                    continue;
+                }
+                else if (line.equals("N:")) {
+                    state = 2;
                     continue;
                 }
 
@@ -320,6 +333,22 @@ public class Main {
 
                         contentPanel.newRelation(contentPanel.getPanel(srcName), contentPanel.getPanel(targetName), Relation.Type.CHILD);
                     } break;
+
+                    case 2: {
+                        String panelName = line;
+
+                        Panel panel = contentPanel.getPanel(panelName);
+                        if (panel != null) {
+                            StringBuilder notes = new StringBuilder();
+                            String noteLine = br.readLine();
+                            while ((noteLine != null) && !(noteLine.equals("__ENDNOTES__"))) {
+                                notes.append(noteLine).append(System.lineSeparator());
+                                noteLine = br.readLine();
+                            }
+
+                            panel.setNotes(notes.toString());
+                        }
+                    }
                 }
             }
 
