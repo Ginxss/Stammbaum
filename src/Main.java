@@ -97,7 +97,7 @@ public class Main {
                 }
 
                 if ((line = br.readLine()) != null) {
-                    String filePath = line.split(":")[1];
+                    String filePath = line.split(":", 2)[1];
                     loadFile(new File(filePath));
                 }
             } catch (IOException e) {
